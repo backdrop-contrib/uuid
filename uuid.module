@@ -1,0 +1,14 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_init().
+ */
+function uuid_init() {
+  $modules = array('node', 'user');
+  foreach ($modules as $module) {
+    if (module_exists($module)) {
+      module_load_include('inc', 'uuid', 'uuid_' . $module);
+    }
+  }
+}
