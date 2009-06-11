@@ -3,7 +3,7 @@
 
 /**
  * Menu callback: options for UUID.
- **/
+ */
 function uuid_admin() {
   $form = array();
 
@@ -54,7 +54,7 @@ function uuid_admin() {
 
 /**
  * Ensure all content and users have UUIDs, if they are supposed to.
- **/
+ */
 function uuid_sync() {
   if (variable_get('uuid_automatic_for_users', FALSE)) {
     db_query("INSERT INTO {uuid_users} SELECT u.uid, UUID() FROM {users} AS u WHERE NOT EXISTS (SELECT uid FROM {uuid_users} WHERE uid = u.uid)");
