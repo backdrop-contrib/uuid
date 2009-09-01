@@ -2,14 +2,19 @@
 // $Id$
 
 /**
+ * Implementation of hook_enable().
+ */
+function uuid_enable() {
+  module_load_include('inc', 'uuid', 'uuid.admin');
+  uuid_sync();
+}
+
+/**
  * Implementation of hook_install().
  */
 function uuid_install() {
   // Create tables.
   drupal_install_schema('uuid');
-
-  require_once(dirname(__FILE__) . '/uuid.admin.inc');
-  uuid_sync();
 }
 
 /**
