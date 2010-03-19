@@ -23,8 +23,10 @@ function uuid_install() {
 function uuid_schema() {
   return array(
     'uuid_node' => uuid_table_schema('node', 'nid'),
-    'uuid_users' => uuid_table_schema('users', 'uid'),
     'uuid_node_revisions' => uuid_table_schema('node_revisions', 'vid'),
+    'uuid_users' => uuid_table_schema('users', 'uid'),
+    'uuid_vocabulary' => uuid_table_schema('vocabulary', 'vid'),
+    'uuid_term_data' => uuid_table_schema('term_data', 'tid'),
   );
 }
 
