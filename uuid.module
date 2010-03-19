@@ -9,7 +9,7 @@ function uuid_menu() {
 
   $items['admin/settings/uuid'] = array(
     'title' => 'Universally Unique IDentifier',
-    'description' => 'UUID generation settings',
+    'description' => 'Configure automatically UUID generation settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('uuid_admin'),
     'access arguments' => array('administer content types'),
