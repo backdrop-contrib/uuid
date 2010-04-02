@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * Administration functions for the uuid module.
+ */
+
+/**
  * Menu callback: options for UUID.
  */
 function uuid_admin() {
