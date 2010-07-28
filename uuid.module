@@ -189,8 +189,11 @@ function uuid_taxonomy($op, $type, $array = NULL) {
     $field = $types[$type]['field'];
     switch ($op) {
       case 'insert':
+        if (empty($array['uuid']) || !uuid_is_valid($array['uuid'])) {
+          $array['uuid'] = uuid_uuid();
+        }
         db_query("INSERT INTO {" . $types[$type]['table'] . "} ($field, uuid) VALUES (%d, '%s')",
-          $array[$types[$type]['field']], uuid_uuid());
+          $array[$types[$type]['field']], $array['uuid']);
         break;
       case 'delete':
         db_query("DELETE FROM {". $types[$type]['table'] ."} WHERE $field = %d", $array[$types[$type]['field']]);
