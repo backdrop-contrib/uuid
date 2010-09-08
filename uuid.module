@@ -203,6 +203,39 @@ function uuid_taxonomy($op, $type, $array = NULL) {
 }
 
 /**
+ * Implementation of hook_comment().
+ */
+function uuid_comment(&$a1, $op) {
+  switch ($op) {
+    // Make sure that a new entry gets made in the comments_uuid table when new content
+    // is added.
+    case 'insert':
+      if (!empty($a1['uuid']) && uuid_is_valid($a1['uuid'])) {
+        db_query("INSERT INTO {uuid_comments} (cid, uuid) VALUES (%d, '%s')", $a1['cid'], $a1['uuid']);
+      }
+      else if (variable_get('uuid_automatic_for_comments', FALSE)) {
+        db_query("INSERT INTO {uuid_comments} (cid, uuid) VALUES (%d, '%s')", $a1['cid'], uuid_uuid());
+      }
+      break;
+      
+    case 'update':
+      if (isset($a1['uuid']) && uuid_is_valid($a1['uuid'])) {
+        $exists = db_result(db_query('SELECT 1 FROM {uuid_comments} WHERE cid = %d', $a1['cid']));
+
+        if (!$exists && variable_get('uuid_automatic_for_comments', FALSE)) {
+          db_query("INSERT INTO {uuid_comments} (cid, uuid) VALUES (%d, '%s')", $a1['cid'], uuid_uuid());
+        }
+      }
+      break;
+
+    // Clean up comments_uuid table when content is deleted.
+    case 'delete':
+      db_query("DELETE FROM {uuid_comments} WHERE cid = %d", $a1->cid);
+      break;
+  }
+}
+
+/**
  * Determines if a UUID is valid.
  */
 function uuid_is_valid($uuid) {
