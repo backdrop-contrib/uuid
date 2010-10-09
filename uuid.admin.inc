@@ -128,9 +128,9 @@ function uuid_sync() {
     }
 
     // Revisions.
-    $result = db_query("SELECT nr.vid AS vid FROM {node_revisions} AS nr INNER JOIN {node} n ON nr.nid = n.nid WHERE n.type IN (" . $placeholders . ") AND nr.vid NOT IN (SELECT vid FROM {uuid_node_revisions})", $types);
+    $result = db_query("SELECT nr.vid AS vid, nr.nid AS nid FROM {node_revisions} AS nr INNER JOIN {node} n ON nr.nid = n.nid WHERE n.type IN (" . $placeholders . ") AND nr.vid NOT IN (SELECT vid FROM {uuid_node_revisions})", $types);
     while ($item = db_fetch_object($result)) {
-      db_query("INSERT INTO {uuid_node_revisions} (vid, uuid) VALUES(%d, '%s')", $item->vid, uuid_uuid());
+      db_query("INSERT INTO {uuid_node_revisions} (vid, uuid, nid) VALUES(%d, '%s', %d)", $item->vid, uuid_uuid(), $item->nid);
     }
   }
 
