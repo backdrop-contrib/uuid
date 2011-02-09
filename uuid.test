@@ -112,7 +112,7 @@ class UUIDUnitTestCase extends UUIDTestHelper {
    * Mark testcase as incomplete.
    */
   function testMarkIncomplete() {
-    $this->markIncomplete(t("This test in incomplete."));
+    $this->markIncomplete(t("This test is incomplete."));
   }
 
 
@@ -154,14 +154,14 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     $object = $this->drupalCreateNode($options);
 
     // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->uuid),
+      t("Node has no uuid field attached with default settings."),
       t("Node UUID")
     );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->revision_uuid),
+      t("Node has no revision_uuid field attached with default settings."),
       t("Node revision UUID")
     );
 
@@ -170,14 +170,14 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     node_save($object);
 
     // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->uuid),
+      t("Node has no uuid field attached with default settings."),
       t("Node UUID")
     );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->revision_uuid),
+      t("Node has no revision_uuid field attached with default settings."),
       t("Node revision UUID")
     );
 
@@ -193,9 +193,9 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     $object = $this->drupalCreateUser();
 
     // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("User has not uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->uuid),
+      t("User has no uuid field attached with default settings."),
       t("User UUID")
     );
   }
@@ -240,14 +240,14 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     $object = $this->drupalCreateNode($options);
 
     // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with disabled settings."),
+    $this->assertTrue(
+      empty($object->uuid),
+      t("Node has no uuid field attached with disabled settings."),
       t("Node UUID")
     );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with disabled settings."),
+    $this->assertTrue(
+      empty($object->revision_uuid),
+      t("Node has no revision_uuid field attached with disabled settings."),
       t("Node revision UUID")
     );
 
@@ -256,17 +256,53 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     node_save($object);
 
     // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->uuid),
+      t("Node has no uuid field attached with default settings."),
       t("Node UUID")
     );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with default settings."),
+    $this->assertTrue(
+      empty($object->revision_uuid),
+      t("Node has no revision_uuid field attached with default settings."),
       t("Node revision UUID")
     );
 
+    // Test Programmatically setting UUIDs.
+    $new_uuid = uuid_uuid();
+    $revision_uuid = uuid_uuid();
+    $options = array(
+      'uid'  => $account->uid,
+      'type' => 'page',
+      'uuid' => $new_uuid,
+      'revision_uuid' => $revision_uuid,
+    );
+    $object = $this->drupalCreateNode($options);
+    $loaded_node = node_load($object->nid, NULL, TRUE);
+
+    $this->assertEqual(
+      $object->uuid,
+      $new_uuid,
+      t("Node uuid can be set programmatically with disabled settings."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object->uuid,
+      $loaded_node->uuid,
+      t("Node uuid is being returned correctly."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object->revision_uuid,
+      $revision_uuid,
+      t("Node revision uuid can be set programmatically with disabled settings."),
+      t("Node Revision UUID")
+    );
+    $this->assertEqual(
+      $object->revision_uuid,
+      $loaded_node->revision_uuid,
+      t("Node revision uuid is being returned correctly."),
+      t("Node Revision UUID")
+    );
   }
 
   /**
@@ -283,9 +319,9 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     $object = $this->drupalCreateUser();
 
     // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("User has not uuid field attached with disabled settings."),
+    $this->assertTrue(
+      empty($object->uuid),
+      t("User has no uuid field attached with disabled settings."),
       t("User UUID")
     );
   }
@@ -306,7 +342,11 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
 
   /**
    * Verify uuid behavior with enabled settings. All settings are forced to
-   * enabled, so new 'entities' should get an uuid assigned.
+   * enabled, so new 'entities' should get a uuid assigned.
+   *
+   * Note that there have been issues with the uuid values the node object
+   * after saving not necessarily reflecting what's in the database, so check
+   * with a node_load().
    */
 
   /**
@@ -344,12 +384,45 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
     // Show current node only in verbose mode.
     $this->verbose(print_r($object, 1));
 
+    // Test saving without a new revision
+    $uuid = $object->uuid;
+    $revision_uuid = $object->revision_uuid;
+    $object->revision = FALSE;
+    node_save($object);
+    $loaded_object = node_load($object->nid, NULL, TRUE);
+
+    $this->assertEqual(
+      $object->uuid,
+      $uuid,
+      t("Node uuid is preserved after update with revisioning off."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $loaded_object->uuid,
+      $uuid,
+      t("Node uuid loads correctly after update with revisioning off."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object->revision_uuid,
+      $revision_uuid,
+      t("Node revision uuid is preserved after update with revisioning off."),
+      t("Node Revision UUID")
+    );
+    $this->assertEqual(
+      $loaded_object->revision_uuid,
+      $revision_uuid,
+      t("Node revision uuid loads correctly after update with revisioning off."),
+      t("Node Revision UUID")
+    );
+
     // make a copy of this node.
     $node = clone($object);
 
     // Create a new revision for this node.
     $object->revision = 1;
     node_save($object);
+    $loaded_node = node_load($object->nid, NULL, TRUE);
 
     // Verify fields are attached to the node.
     $this->assertIsUUID(
@@ -371,10 +444,56 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
       t("Node UUID")
     );
     $this->assertNotEqual(
-      $object->uuid,
-      $node->uuid,
+      $object->revision_uuid,
+      $node->revision_uuid,
       t("Node revision uuid is being updated successfully."),
       t("Node revision UUID")
+    );
+
+    // Verify altered object reflects what's really in the database
+    $this->assertEqual(
+      $object->uuid,
+      $loaded_node->uuid,
+      t("Node uuid is being returned correctly."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object->revision_uuid,
+      $loaded_node->revision_uuid,
+      t("Node revision uuid is being returned correctly."),
+      t("Node revision UUID")
+    );
+
+    // Replace the UUID
+    $new_uuid = uuid_uuid();
+    $revision_uuid = uuid_uuid();
+    $object->uuid = $new_uuid;
+    $object->revision_uuid = $revision_uuid;
+    node_save($object);
+    $loaded_node = node_load($object->nid, NULL, TRUE);
+    $this->assertEqual(
+      $object->uuid,
+      $new_uuid,
+      t("Node uuid is being changed correctly."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object->uuid,
+      $loaded_node->uuid,
+      t("Node uuid is being returned correctly."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object->revision_uuid,
+      $revision_uuid,
+      t("Node revision uuid is being changed correctly."),
+      t("Node Revision UUID")
+    );
+    $this->assertEqual(
+      $object->revision_uuid,
+      $loaded_node->revision_uuid,
+      t("Node revision uuid is being returned correctly."),
+      t("Node Revision UUID")
     );
 
     // Show current node only in verbose mode.
@@ -414,6 +533,88 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
    */
   function testEnabledCommentUUID() {
     $this->markIncomplete(t("This test is incomplete."));
+  }
+
+  /**
+   * Verify uuid behavior with changed settings. All settings are forced to
+   * disabled, then a node is created (with no UUID). Then settings are enabled,
+   * and the node is resaved, which should trigger UUIDs being created.
+   */
+  function testChangedSettingNodeUUID() {
+    // Set module settings.
+    $settings = array(
+      'uuid_automatic_for_nodes[page]'  => FALSE,
+    );
+    $this->uuidSettingsSet($settings);
+
+    // Create a user.
+    $account = $this->drupalCreateUser(array('create page content'));
+
+    // Create a node with that user.
+    $options = array(
+      'uid'  => $account->uid,
+      'type' => 'page',
+    );
+    $object1 = $this->drupalCreateNode($options);
+    $object2 = $this->drupalCreateNode($options);
+
+    // Set module settings.
+    $settings = array(
+      'uuid_automatic_for_nodes[page]' => TRUE,
+    );
+    $this->uuidSettingsSet($settings);
+
+    node_save($object1);
+
+    // Verify fields are attached to the node.
+    $this->assertIsUUID(
+      $object1->uuid,
+      t("Node has uuid field attached with previously disabled settings."),
+      t("Node UUID")
+    );
+    $this->assertIsUUID(
+      $object1->revision_uuid,
+      t("Node has revision uuid field attached with previously disabled settings."),
+      t("Node revision UUID")
+    );
+
+    // Show current node only in verbose mode.
+    $this->verbose(print_r($object1, 1));
+
+    // Now programmatically set UUIDs and test with object2
+    $new_uuid = uuid_uuid();
+    $revision_uuid = uuid_uuid();
+    $object2->uuid = $new_uuid;
+    $object2->revision_uuid = $revision_uuid;
+    node_save($object2);
+    $loaded_node = node_load($object2->nid, NULL, TRUE);
+    $this->assertEqual(
+      $object2->uuid,
+      $new_uuid,
+      t("Node uuid can be set programmatically with changed settings."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object2->uuid,
+      $loaded_node->uuid,
+      t("Node uuid with changed settings is being returned correctly."),
+      t("Node UUID")
+    );
+    $this->assertEqual(
+      $object2->revision_uuid,
+      $revision_uuid,
+      t("Node revision uuid can be set programmatically with changed settings."),
+      t("Node Revision UUID")
+    );
+    $this->assertEqual(
+      $object2->revision_uuid,
+      $loaded_node->revision_uuid,
+      t("Node revision uuid with changed settings is being returned correctly."),
+      t("Node Revision UUID")
+    );
+
+    // Show current node only in verbose mode.
+    $this->verbose(print_r($object2, 1));
   }
 
 }

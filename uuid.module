@@ -33,12 +33,7 @@ function uuid_nodeapi(&$node, $op, $teaser, $page) {
 
   switch ($op) {
     case 'load':
-      $revision_uuid = db_result(db_query('SELECT uuid FROM {uuid_node_revisions} WHERE vid = %d', $node->vid));
-      return array(
-        'uuid' => db_result(db_query('SELECT uuid FROM {uuid_node} WHERE nid = %d', $node->nid)),
-        'revision_uuid' => $revision_uuid,
-        'loaded_revision_uuid' => $revision_uuid,
-      );
+      return uuid_node_load($node);
     case 'insert':
       // Handle the case where automatic UUID generation is turned OFF but a
       // node is created, node_save(), intentionally with the $node->uuid
@@ -55,7 +50,7 @@ function uuid_nodeapi(&$node, $op, $teaser, $page) {
           db_query("INSERT INTO {uuid_node_revisions} (vid, uuid, nid) VALUES (%d, '%s', %d)", $node->vid, $node->revision_uuid, $node->nid);
         }
       }
-      elseif (in_array($node->type, $automatic_types)) {
+      elseif (in_array($node->type, $automatic_types, TRUE)) {
         $node->uuid = uuid_uuid();
         $node->revision_uuid = uuid_uuid();
         db_query("INSERT INTO {uuid_node} (nid, uuid) VALUES (%d, '%s')", $node->nid, $node->uuid);
@@ -63,12 +58,43 @@ function uuid_nodeapi(&$node, $op, $teaser, $page) {
       }
       break;
     case 'update':
-      if (isset($node->revision)) {
-        if (isset($node->revision_uuid) && uuid_is_valid($node->revision_uuid) && $node->revision_uuid != $node->loaded_revision_uuid) {
-          db_query("INSERT INTO {uuid_node_revisions} (vid, uuid, nid) VALUES (%d, '%s', %d)", $node->vid, $node->revision_uuid, $node->nid);
+      // Get existing UUID info from the DB.
+      $uuid_information = uuid_node_load($node);
+      $auto_create = in_array($node->type, $automatic_types, TRUE);
+      $uuid_exists = isset($node->uuid) && uuid_is_valid($node->uuid);
+      $uuid_in_db = !empty($uuid_information['uuid']);
+
+      // Create a UUID if this is an automatic type but no UUID exists. Save the
+      // UUID if it's valid but is not in the database.
+      if ($uuid_exists || $auto_create) {
+        $node->uuid = $uuid_exists ? $node->uuid : uuid_uuid();
+        // Update the existing UUID.
+        if (!$uuid_in_db) {
+          db_query("INSERT INTO {uuid_node} (nid, uuid) VALUES (%d, '%s')", $node->nid, $node->uuid);
         }
-        else {
-          $node->revision_uuid = uuid_uuid();
+        elseif ($uuid_information['uuid'] != $node->uuid) {
+          db_query("UPDATE {uuid_node} SET uuid = '%s' WHERE nid = %d", $node->uuid, $node->nid);
+        }
+        $uuid_exists = TRUE;
+      }
+
+      $rev_uuid_exists = isset($node->revision_uuid) && uuid_is_valid($node->revision_uuid);
+      $rev_uuid_in_db = $rev_uuid_exists ? db_result(db_query("SELECT 1 FROM {uuid_node_revisions} WHERE uuid = '%s'", $node->revision_uuid)) : FALSE;
+      $rev_uuid_needs_saved = $rev_uuid_exists && !$rev_uuid_in_db;
+
+      // If a UUID exists, save a revision UUID if none exists or this is a new
+      // revision, or there's a programmatic revision set.
+      if ($uuid_exists && (empty($uuid_information['revision_uuid']) || !empty($node->revision) || $rev_uuid_needs_saved)) {
+        // We need to determine when to generate a new revision UUID. This
+        // should only happen if this is a new revision and if the existing
+        // revision uuid already exists in the database or doesn't exist at all.
+        $generate_new = !empty($node->revision) && ($rev_uuid_in_db || !$rev_uuid_exists);
+        $node->revision_uuid = $generate_new ? uuid_uuid() : $node->revision_uuid;
+
+        // Be sure to consider the case where the revision_uuid may be changing
+        // programmatically, so try updating first.
+        db_query("UPDATE {uuid_node_revisions} SET uuid = '%s' WHERE vid = %d", $node->revision_uuid, $node->vid);
+        if (!db_affected_rows()) {
           db_query("INSERT INTO {uuid_node_revisions} (vid, uuid, nid) VALUES (%d, '%s', %d)", $node->vid, $node->revision_uuid, $node->nid);
         }
       }
@@ -81,6 +107,24 @@ function uuid_nodeapi(&$node, $op, $teaser, $page) {
     case 'delete revision':
       db_query('DELETE FROM {uuid_node_revisions} WHERE vid = %d', $node->vid);
       break;
+  }
+}
+
+/**
+ * Load the UUID information for a node.
+ *
+ * @param $node
+ *   Node object to load UUID information for.
+ *
+ * @return
+ *   Array with UUID information.
+ */
+function uuid_node_load($node) {
+  if ($arr = db_fetch_array(db_query('SELECT un.uuid AS uuid, unr.uuid AS revision_uuid FROM {uuid_node} un LEFT JOIN {uuid_node_revisions} unr ON unr.vid=%d WHERE un.nid=%d', $node->vid, $node->nid))) {
+    return $arr;
+  }
+  else {
+   return array('uuid' => FALSE, 'revision_uuid' => FALSE);
   }
 }
 
