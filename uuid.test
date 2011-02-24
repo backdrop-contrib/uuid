@@ -501,6 +501,52 @@ class UUIDFunctionalityTestCase extends UUIDTestHelper {
   }
 
   /**
+   * Verify uuid behavior when edititng via node form.
+   * http://drupal.org/node/1065364
+   */
+  function testEnabledNodeUUIDFormEdit() {
+    // Set module settings.
+    $settings = array(
+      'uuid_automatic_for_nodes[page]'  => TRUE,
+    );
+    $this->uuidSettingsSet($settings);
+
+    // Create and log in our privileged user.
+    $account = $this->drupalCreateUser(array('create page content', 'edit own page content'));
+    $this->drupalLogin($account);
+
+    // Create a node with that user.
+    $options = array(
+      'uid'  => $account->uid,
+      'type' => 'page',
+    );
+    $node = $this->drupalCreateNode($options);
+
+    // Verify fields are attached to the node.
+    $this->assertIsUUID(
+      $node->uuid,
+      t("Node has uuid field attached with enabled settings."),
+      t("Node UUID")
+    );
+
+    // Show current node only in verbose mode.
+    $this->verbose(print_r($node, 1));
+
+    // Edit the node via edit form
+    $edit = array();
+    $edit['title'] = $this->randomName(8);
+    $this->drupalPost("node/{$node->nid}/edit", $edit, t('Save'));
+    $this->assertText(t('@title has been updated.', array('@title' => $edit['title'])));
+
+    // Reload the node
+    $updated_node = node_load($node->nid, NULL, TRUE);
+    $this->assertEqual($node->uuid, $updated_node->uuid, t("Node updated with edit form retained same UUID."));
+
+    // Show current node only in verbose mode.
+    $this->verbose(print_r($updated_node, 1));
+  }
+
+  /**
    * Verify uuid behavior for users.
    */
   function testEnabledUserUUID() {

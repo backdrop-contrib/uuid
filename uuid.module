@@ -60,6 +60,14 @@ function uuid_nodeapi(&$node, $op, $teaser, $page) {
     case 'update':
       // Get existing UUID info from the DB.
       $uuid_information = uuid_node_load($node);
+      // If the $node object is not fully loaded, set any existing UUID properties.
+      // http://drupal.org/node/1065364
+      if (!empty($uuid_information['uuid']) && empty($node->uuid)) {
+        $node->uuid = $uuid_information['uuid'];
+      }
+      if (!empty($uuid_information['revision_uuid']) && empty($node->revision_uuid)) {
+        $node->revision_uuid = $uuid_information['revision_uuid'];
+      }
       $auto_create = in_array($node->type, $automatic_types, TRUE);
       $uuid_exists = isset($node->uuid) && uuid_is_valid($node->uuid);
       $uuid_in_db = !empty($uuid_information['uuid']);
@@ -187,11 +195,17 @@ function uuid_user($op, &$edit, &$user, $category = NULL) {
       $user->uuid = db_result(db_query('SELECT uuid FROM {uuid_users} WHERE uid = %d', $user->uid));
       break;
     case 'insert':
+      $insert = NULL;
       if (isset($user->uuid) && uuid_is_valid($user->uuid)) {
-        db_query("INSERT INTO {uuid_users} (uid, uuid) VALUES (%d, '%s')", $user->uid, $user->uuid);
+        $insert = $user->uuid;
+      }
+      else if (isset($edit['uuid']) && uuid_is_valid($edit['uuid'])) {
+        $insert = $user->uuid = $edit['uuid'];
       }
       else if (variable_get('uuid_automatic_for_users', FALSE)) {
-        $user->uuid = uuid_uuid();
+        $insert = $user->uuid = uuid_uuid();
+      }
+      if ($insert) {
         db_query("INSERT INTO {uuid_users} (uid, uuid) VALUES (%d, '%s')", $user->uid, $user->uuid);
       }
       break;
