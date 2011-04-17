@@ -19,3 +19,9 @@ function uuid_node_node_presave($node) {
   }
 }
 
+/**
+ * Searches for a node by its UUID.
+ */
+function uuid_node_find($uuid) {
+  return uuid_find($uuid, 'node', 'nid');
+}

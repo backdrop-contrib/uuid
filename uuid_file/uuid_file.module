@@ -11,3 +11,9 @@ function uuid_file_file_presave($file) {
   }
 }
 
+/**
+ * Searches for a file by its UUID.
+ */
+function uuid_file_find($uuid) {
+  return uuid_find($uuid, 'file_managed', 'fid');
+}

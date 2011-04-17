@@ -35,13 +35,36 @@ function uuid_uuid() {
 }
 
 /**
+ * Finds the entity id by looking up the UUID.
+ *
+ * @param $uuid
+ *   The uuid to look up.
+ * @param $table
+ *   The table to perform the search on.
+ * @param $id_column
+ *   The column containing the entity id.
+ * @param $uuid_column
+ *   The column containing the UUIDs.
+ *
+ * @return
+ *   The id for the entity or NULL if not found
+ */
+function uuid_find($uuid, $table, $id_column, $uuid_column = 'uuid') {
+  return db_select($table, ' t')
+    ->fields('t', array($id_column))
+    ->condition($uuid_column, $uuid, '=')
+    ->execute()
+    ->fetchField();
+}
+
+/**
  * Check that a string appears to be in the format of a UUID.
  *
  * @param $uuid
  *  The string to test.
  *
  * @return
- *   Returns TRUE is the string is well formed.
+ *   TRUE if the string is well formed.
  */
 function uuid_is_well_formed($uuid) {
   return preg_match("/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/", $uuid);
@@ -89,11 +112,9 @@ function uuid_uuid_info() {
 
 /**
  * Fetches the PHP fallback generator config.
- *
- * This is used to keep 
  */
 function _uuid_uuid_php_info() {
- return array(
+  return array(
     'callback' => 'uuid_php',
     'title' => t('PHP Fallback'),
   );
@@ -108,7 +129,7 @@ function _uuid_uuid_php_info() {
  */
 function uuid_com() {
   // remove {} wrapper and make lower case to keep result consistent
-  return strtolower(trim(com_create_guid(), '{}'));
+  return drupal_strtolower(trim(com_create_guid(), '{}'));
 }
 
 /**

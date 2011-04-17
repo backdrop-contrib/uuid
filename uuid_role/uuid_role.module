@@ -49,3 +49,10 @@ function uuid_role_form_user_admin_role_alter(&$form, &$form_state, $form_id) {
     );
   }
 }
+
+/**
+ * Finds a role by its UUID.
+ */
+function uuid_role_find($uuid) {
+  return uuid_find($uuid, 'role', 'rid');
+}

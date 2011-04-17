@@ -8,3 +8,11 @@ function uuid_taxonomy_term_presave($term) {
     $term->uuid = uuid_uuid();
   }
 }
+
+/**
+ * Find a taxonomy term id by its UUID.
+ */
+function uuid_taxonomy_term_find($uuid) {
+  return uuid_find($uuid, 'taxonomy_term_data', 'tid');
+}
+
