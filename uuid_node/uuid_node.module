@@ -21,7 +21,24 @@ function uuid_node_node_presave($node) {
 
 /**
  * Searches for a node by its UUID.
+ *
+ * @return
+ *   The node id if found or FALSE if not found.
  */
 function uuid_node_find($uuid) {
   return uuid_find($uuid, 'node', 'nid');
+}
+
+/**
+ * Find a node revision by its UUID.
+ *
+ * @return
+ *   FALSE if not found or array with nid and vid as keys.
+ */
+function uuid_node_revision_find($uuid) {
+  return db_select('node_revision', 'r')
+    ->fields('r', array('vid', 'nid'))
+    ->condition('vuuid', $uuid, '=')
+    ->execute()
+    ->fetchAssoc();
 }
