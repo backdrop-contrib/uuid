@@ -1,0 +1,7 @@
+name = UUID Nodes
+description = UUID handler for nodes.
+core = 7.x
+package = uuid
+
+dependencies[] = uuid
+dependencies[] = node
