@@ -47,7 +47,7 @@ function uuid_uuid() {
  *   The column containing the UUIDs.
  *
  * @return
- *   The id for the entity or NULL if not found
+ *   The id for the entity or FALSE if not found
  */
 function uuid_find($uuid, $table, $id_column, $uuid_column = 'uuid') {
   return db_select($table, ' t')
