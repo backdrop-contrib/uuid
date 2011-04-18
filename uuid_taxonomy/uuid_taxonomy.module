@@ -19,6 +19,6 @@ function uuid_taxonomy_term_find($uuid) {
 /**
  * Ensures all taxonomy terms have a UUID.
  */
-function uuid_taxonomy_term_uuid_sync() {
+function uuid_taxonomy_uuid_sync() {
   uuid_sync('taxonomy_term_data', 'tid');
 }
