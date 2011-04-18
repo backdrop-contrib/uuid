@@ -6,14 +6,6 @@
  */
 
 /**
- * Implementation of hook_enable().
- */
-function uuid_enable() {
-  module_load_include('inc', 'uuid', 'uuid.admin');
-  uuid_sync();
-}
-
-/**
  * Implementation of hook_install().
  */
 function uuid_install() {

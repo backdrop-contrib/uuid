@@ -1,7 +1,19 @@
 <?php
 
+/**
+ * @file
+ * Install, update and uninstall functions for the uuid_taxonomy module.
+ */
+
 // Include UUID schema helper functions.
 module_load_include('inc', 'uuid', 'uuid.schema');
+
+/**
+ * Implements hook_enable().
+ */
+function uuid_taxonomy_enable() {
+  uuid_taxonomy_uuid_sync();
+}
 
 /**
  * Implements hook_schema_alter().
