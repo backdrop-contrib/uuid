@@ -24,6 +24,16 @@ function uuid_admin() {
     '#options' => _uuid_admin_generators()
   );
 
+  $form['sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Synchronization'),
+  );
+  $form['sync']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create missing UUIDs'),
+    '#submit' => array('uuid_sync_all'),
+  );
+
   return system_settings_form($form);
 }
 

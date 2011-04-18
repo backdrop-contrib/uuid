@@ -58,6 +58,42 @@ function uuid_find($uuid, $table, $id_column, $uuid_column = 'uuid') {
 }
 
 /**
+ * Generate all missing UUIDs.
+ */
+function uuid_sync_all() {
+  module_invoke_all('uuid_sync');
+  drupal_set_message('Generated missing UUIDs.');
+}
+
+/**
+ * Ensure all rows in a table have a UUID
+ */
+function uuid_sync($table, $id_column, $uuid_column = 'uuid') {
+  $generator = variable_get('uuid_generator', 'php');
+  if ('mysql' == $generator) {
+    db_update($table)
+      ->expression($uuid_column, 'UUID()')
+      ->condition(db_or()->condition($uuid_column, '')->isNull($uuid_column))
+      ->execute();
+    return;
+  }
+
+  $result = db_select($table, 't')
+    ->fields('t', array($id_column))
+    ->condition(db_or()->condition($uuid_column, '')->isNull($uuid_column))
+    ->execute();
+
+  foreach ($result as $record) {
+    $id = $record->{$id_column};
+
+    db_update($table)
+      ->fields(array($uuid_column => uuid_uuid()))
+      ->condition($id_column, $id)
+      ->execute();
+  }
+}
+
+/**
  * Check that a string appears to be in the format of a UUID.
  *
  * @param $uuid

@@ -56,3 +56,10 @@ function uuid_role_form_user_admin_role_alter(&$form, &$form_state, $form_id) {
 function uuid_role_find($uuid) {
   return uuid_find($uuid, 'role', 'rid');
 }
+
+/**
+ * Ensures all roles have a UUID.
+ */
+function uuid_role_uuid_sync() {
+  uuid_sync('role', 'rid');
+}

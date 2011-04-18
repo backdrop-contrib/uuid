@@ -10,9 +10,15 @@ function uuid_taxonomy_term_presave($term) {
 }
 
 /**
- * Find a taxonomy term id by its UUID.
+ * Finds a taxonomy term id by its UUID.
  */
 function uuid_taxonomy_term_find($uuid) {
   return uuid_find($uuid, 'taxonomy_term_data', 'tid');
 }
 
+/**
+ * Ensures all taxonomy terms have a UUID.
+ */
+function uuid_taxonomy_term_uuid_sync() {
+  uuid_sync('taxonomy_term_data', 'tid');
+}

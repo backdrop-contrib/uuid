@@ -18,3 +18,10 @@ function uuid_comment_comment_presave($comment) {
 function uuid_comment_find($uuid) {
   return uuid_find($uuid, 'comment', 'cid');
 }
+
+/**
+ * Ensures all comments have a UUID.
+ */
+function uuid_comment_uuid_sync() {
+  uuid_sync('comment', 'cid');
+}

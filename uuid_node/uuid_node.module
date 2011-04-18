@@ -42,3 +42,11 @@ function uuid_node_revision_find($uuid) {
     ->execute()
     ->fetchAssoc();
 }
+
+/**
+ * Ensures all nodes and revisions have UUIDs.
+ */
+function uuid_node_uuid_sync() {
+  uuid_sync('node', 'nid');
+  uuid_sync('node_revision', 'vid', 'vuuid');
+}
