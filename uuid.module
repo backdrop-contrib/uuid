@@ -36,3 +36,41 @@ function uuid_permissions() {
   return array('administer uuid');
 }
 
+/**
+ * Implements hook_token_info().
+ */
+function uuid_token_info() {
+  $type = array(
+    'name' => t('uuid'), 
+    'description' => t('Tokens related to UUID.'), 
+    'needs-data' => NULL,
+  );
+
+  $tokens['uuid'] = array(
+    'name' => t("UUID"), 
+    'description' => t("The Universally Unique IDentifier."),
+  );
+
+  return array(
+    'types' => array('uuid' => $type), 
+    'tokens' => array('uuid' => $tokens),
+  );
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function uuid_tokens($type, $tokens, $data = array(), $options = array()) {
+  $replacements = array();
+  if ('uuid' != $type) {
+    return $replacements;
+  }
+
+  foreach ($tokens as $name => $original) {
+    if ('uuid' == $name) {
+      $replacements[$original] = uuid_uuid();
+      return $replacements;
+    }
+  }
+  return $replacements;
+}
