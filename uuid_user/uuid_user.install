@@ -12,6 +12,15 @@ module_load_include('inc', 'uuid', 'uuid.schema');
  * Implements hook_enable().
  */
 function uuid_user_enable() {
+
+  if (variable_get(UUID_UPGRADE_VAR, FALSE)) {
+    db_query('UPDATE {users} u INNER JOIN {uuid_users} uu ON u.uid = uu.uid'
+      . ' SET u.uuid = uu.uuid');
+
+    db_drop_table('uuid_users');
+    variable_del('uuid_automatic_for_users');
+  }
+
   uuid_user_uuid_sync();
 }
 

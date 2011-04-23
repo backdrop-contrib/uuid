@@ -12,6 +12,16 @@ module_load_include('inc', 'uuid', 'uuid.schema');
  * Implements hook_enable().
  */
 function uuid_comment_enable() {
+
+
+  if (variable_get(UUID_UPGRADE_VAR, FALSE)) {
+    db_query('UPDATE {comment} c INNER JOIN {uuid_comments} cu ON c.cid = cu.cid'
+      . ' SET c.uuid = cu.uuid');
+
+    db_drop_table('uuid_comments');
+    variable_del('uuid_automatic_for_comments');
+  }
+
   uuid_comment_uuid_sync();
 }
 

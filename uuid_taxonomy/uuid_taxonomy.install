@@ -12,6 +12,16 @@ module_load_include('inc', 'uuid', 'uuid.schema');
  * Implements hook_enable().
  */
 function uuid_taxonomy_enable() {
+
+
+  if (variable_get(UUID_UPGRADE_VAR, FALSE)) {
+    db_query('UPDATE {taxonomy_term_data} t INNER JOIN {uuid_term_data} tu ON t.uid = tu.uid'
+      . ' SET t.uuid = tu.uuid');
+
+    db_drop_table('uuid_term_data');
+    variable_del('uuid_automatic_for_taxonomy');
+  }
+
   uuid_taxonomy_uuid_sync();
 }
 
