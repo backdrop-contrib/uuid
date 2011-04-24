@@ -25,3 +25,13 @@ function uuid_comment_find($uuid) {
 function uuid_comment_uuid_sync() {
   uuid_sync('comment', 'cid');
 }
+
+
+/**
+ * Implements hook_views_api().
+ */
+function uuid_comment_views_api() {
+  return array(
+    'api' => 2, 
+  );
+}

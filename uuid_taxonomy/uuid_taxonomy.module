@@ -22,3 +22,12 @@ function uuid_taxonomy_term_find($uuid) {
 function uuid_taxonomy_uuid_sync() {
   uuid_sync('taxonomy_term_data', 'tid');
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function uuid_taxonomy_views_api() {
+  return array(
+    'api' => 2, 
+  );
+}

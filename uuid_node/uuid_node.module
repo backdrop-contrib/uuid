@@ -50,3 +50,13 @@ function uuid_node_uuid_sync() {
   uuid_sync('node', 'nid');
   uuid_sync('node_revision', 'vid', 'vuuid');
 }
+
+
+/**
+ * Implements hook_views_api().
+ */
+function uuid_node_views_api() {
+  return array(
+    'api' => 2, 
+  );
+}

@@ -24,3 +24,12 @@ function uuid_file_find($uuid) {
 function uuid_file_uuid_sync() {
   uuid_sync('file_managed', 'fid');
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function uuid_file_views_api() {
+  return array(
+    'api' => 2, 
+  );
+}

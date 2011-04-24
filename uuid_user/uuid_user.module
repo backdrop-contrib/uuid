@@ -24,3 +24,12 @@ function uuid_user_find($uuid) {
 function uuid_user_uuid_sync() {
   uuid_sync('users', 'uid');
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function uuid_user_views_api() {
+  return array(
+    'api' => 2, 
+  );
+}
