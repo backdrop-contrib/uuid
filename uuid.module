@@ -30,10 +30,15 @@ function uuid_menu() {
 }
 
 /**
- * Implements of hook_permissions().
+ * Implements of hook_permission().
  */
-function uuid_permissions() {
-  return array('administer uuid');
+function uuid_permission() {
+  return array(
+    'administer uuid' => array(
+      'title' => t('Administer UUID'),
+      'description' => t('Allows configuration of the UUID module and APIs.'),
+    ),
+  );
 }
 
 /**

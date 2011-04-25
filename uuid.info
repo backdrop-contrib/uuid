@@ -2,3 +2,4 @@ name = "Universally Unique IDentifier (UUID)"
 description = "Generate Universally Unique IDentifier (UUID) for content."
 core = 7.x
 package = uuid
+configure = admin/config/system/uuid
