@@ -5,7 +5,7 @@
  * Install, update and uninstall functions for the uuid module.
  */
 
-define('UID_UPGRADE_VAR', 'uuid_upgrade_in_progress');
+define('UUID_UPGRADE_VAR', 'uuid_upgrade_in_progress');
 
 /**
  * Implementation of hook_uninstall().
