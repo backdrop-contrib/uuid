@@ -11,7 +11,7 @@ module_load_include('inc', 'uuid', 'uuid');
 // Generic Hooks
 
 /**
- * Implements of hook_menu().
+ * Implements hook_menu().
  */
 function uuid_menu() {
   $items = array();
@@ -30,7 +30,7 @@ function uuid_menu() {
 }
 
 /**
- * Implements of hook_permission().
+ * Implements hook_permission().
  */
 function uuid_permission() {
   return array(
@@ -46,18 +46,18 @@ function uuid_permission() {
  */
 function uuid_token_info() {
   $type = array(
-    'name' => t('uuid'), 
-    'description' => t('Tokens related to UUID.'), 
+    'name' => t('uuid'),
+    'description' => t('Tokens related to UUID.'),
     'needs-data' => NULL,
   );
 
   $tokens['uuid'] = array(
-    'name' => t("UUID"), 
+    'name' => t("UUID"),
     'description' => t("The Universally Unique IDentifier."),
   );
 
   return array(
-    'types' => array('uuid' => $type), 
+    'types' => array('uuid' => $type),
     'tokens' => array('uuid' => $tokens),
   );
 }

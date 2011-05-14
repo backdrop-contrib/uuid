@@ -40,7 +40,7 @@ function uuid_admin() {
 /**
  * Prepares a list of UUID generators for select #options in settings form.
  *
- * @return 
+ * @return
  *   List of available UUID generators.
  */
 function _uuid_admin_generators() {

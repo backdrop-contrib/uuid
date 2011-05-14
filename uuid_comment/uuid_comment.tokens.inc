@@ -11,7 +11,7 @@
 function uuid_comment_token_info() {
   $tokens = array();
   $tokens['uuid'] = array(
-    'name' => t('Comment UUID'), 
+    'name' => t('Comment UUID'),
     'description' => t('The universally unique ID of the comment.'),
   );
 

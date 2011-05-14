@@ -11,7 +11,7 @@
 function uuid_file_token_info() {
   $tokens = array();
   $tokens['uuid'] = array(
-    'name' => t('File UUID'), 
+    'name' => t('File UUID'),
     'description' => t('The universally unique ID of the file.'),
   );
 

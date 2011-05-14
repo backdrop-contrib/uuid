@@ -62,7 +62,7 @@ function uuid_find($uuid, $table, $id_column, $uuid_column = 'uuid') {
  */
 function uuid_sync_all() {
   module_invoke_all('uuid_sync');
-  drupal_set_message('Generated missing UUIDs.');
+  drupal_set_message(t('Generated missing UUIDs.'));
 }
 
 /**

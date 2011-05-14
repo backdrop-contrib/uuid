@@ -8,7 +8,7 @@
 define('UUID_UPGRADE_VAR', 'uuid_upgrade_in_progress');
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function uuid_uninstall() {
   variable_del('uuid_generator');
@@ -88,7 +88,7 @@ function uuid_update_6005() {
     // default value of 0 in uuid_node_revisions.
     $result = db_query('SELECT nr.nid, nr.vid FROM {node_revisions} AS nr LEFT JOIN {uuid_node_revisions} AS unr ON unr.vid=nr.vid WHERE unr.nid=%d', 0);
     while ($item = db_fetch_object($result)) {
-      $ret[] = update_sql('UPDATE {uuid_node_revisions} SET nid='. (int) $item->nid .' WHERE vid='. (int) $item->vid);
+      $ret[] = update_sql('UPDATE {uuid_node_revisions} SET nid=' . (int) $item->nid . ' WHERE vid=' . (int) $item->vid);
     }
     // Add uuid_node_revision rows for rows that don't exist, but should.
     $result = db_query('SELECT nr.nid, nr.vid FROM {node_revisions} AS nr LEFT JOIN {uuid_node_revisions} AS unr ON unr.vid=nr.vid WHERE unr.nid IS NULL');
@@ -128,7 +128,7 @@ function uuid_update_7100() {
       $messages .= t('Enabled @module module.', array('@module' => $module)) . " \n";
     }
     else {
-      drupal_set_message('Failed to enable module: @module', array('@module' => $module), 'error');
+      drupal_set_message(t('Failed to enable module: @module', array('@module' => $module)), 'error');
     }
   }
 

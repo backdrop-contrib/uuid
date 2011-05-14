@@ -11,7 +11,7 @@
 function uuid_user_token_info() {
   $tokens = array();
   $tokens['uuid'] = array(
-    'name' => t('User UUID'), 
+    'name' => t('User UUID'),
     'description' => t('The universally unique ID of the user.'),
   );
 
