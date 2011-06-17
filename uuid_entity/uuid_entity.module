@@ -1,0 +1,25 @@
+<?php
+
+module_load_include('inc', 'uuid');
+
+/**
+ * Wrapper function around 'entity_save()' that supports saving entities based
+ * on their UUID.
+ *
+ * This function will try to find the local entity ID if it exists and update
+ * the node accordingly, otherwise a new node will be saved.
+ */
+function uuid_entity_save($entity_type, $entity) {
+  // Metadata wrapper for the entity.
+  $entity_wrapper = entity_metadata_wrapper($entity_type, $entity);
+  // Find out what the name of the ID property is.
+  $id_property = $entity_wrapper->entityKey('id');
+  // Fetch the entity ID.
+  $entity_id = uuid_find($entity->uuid, $entity_type, $id_property);
+  // Populate the entity with its ID, if it exists.
+  if (!empty($entity_id)) {
+    $entity->{$id_property} = $entity_id;
+  }
+  // Save the entity.
+  entity_save($entity_type, $entity);
+}
