@@ -3,4 +3,4 @@ description = Generic UUID handling for entities
 core = 7.x
 package = uuid
 
-dependencies[] = entities
+dependencies[] = entity
