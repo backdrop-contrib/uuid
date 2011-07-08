@@ -15,16 +15,23 @@ function uuid_entity_save($entity_type, $entity) {
 
   // Fetch and set the entity ID.
   $id_property = $entity_wrapper->entityKey('id');
-  $id = uuid_find($entity->uuid, $entity_type, $id_property);
-  if (!empty($id)) {
+  $id = uuid_find($entity->uuid, $entity_type, $id_property, 'uuid');
+  // If there are no local ID for this entity, it means we should create.
+  if (empty($id)) {
+    unset($entity->{$id_property});
+  }
+  else {
     $entity->{$id_property} = $id;
   }
 
-  // Fetch and set the entity version ID.
   if (isset($entity->vuuid)) {
     $vid_property = $entity_wrapper->entityKey('revision');
     $vid = uuid_find($entity->vuuid, $entity_type . '_revision', $vid_property, 'vuuid');
-    if (!empty($vid)) {
+    if (empty($vid)) {
+      unset($entity->{$vid_property});
+      $entity->revision = TRUE;
+    }
+    else {
       $entity->{$vid_property} = $vid;
     }
   }
