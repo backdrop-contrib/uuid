@@ -1,7 +1,0 @@
-name = UUID Entity
-description = Generic UUID handling for entities
-core = 7.x
-package = uuid
-
-dependencies[] = uuid
-dependencies[] = entity

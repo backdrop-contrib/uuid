@@ -1,5 +1,6 @@
-name = "Universally Unique IDentifier (UUID)"
-description = "Generate Universally Unique IDentifier (UUID) for content."
+name = Universally Unique ID
+description = Extends the Entity API and adds support for universally unique identifiers.
 core = 7.x
-package = uuid
+package = UUID
 configure = admin/config/system/uuid
+dependencies[] = entity
