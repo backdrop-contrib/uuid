@@ -38,7 +38,7 @@ function uuid_sync_all() {
  * @return
  *   TRUE if the string is well formed.
  */
-function uuid_is_well_formed($uuid) {
+function uuid_is_valid($uuid) {
   return preg_match("/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/", $uuid);
 }
 

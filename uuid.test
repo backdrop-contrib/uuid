@@ -1,561 +1,190 @@
 <?php
 
 /**
- * @file
- * Functionality tests for UUID module.
+ * Base class with some helper methods.
  */
+class UUIDTestCase extends DrupalWebTestCase {
 
-/**
- * Helper test class with some added functions for testing.
- */
-class UUIDTestHelper extends DrupalWebTestCase {
-  function setUp() {
-    $args = func_get_args();
-
-    // Call parent::setUp() allowing test cases to pass further modules.
-    $modules = array('uuid');
-    if (isset($args[0]) && is_array($args[0])) {
-      $modules = array_merge($modules, $args[0]);
-    }
-
-    $parent_callback = 'parent::setUp';
-    if (version_compare(PHP_VERSION, '5.3.0', '<')) {
-      $parent_callback = array($this, 'parent::setUp');
-    }
-    call_user_func_array($parent_callback, $modules);
-
-  }
-
- /**
-  * Custom UUID assertions and helpers.
-  */
-
- /**
-  * Log in as administrator and change the settings using the admin settings
-  * form. After finishing the verification, return to previously logged in user.
-  *
-  * @param array $options
-  *  - associative array of options to be set in the settings form. Available
-  *    options will match the settings form field names.
-  */
-  public function uuidSettingsSet($options) {
-    $loggedin = $this->loggedInUser;
-
-    // Login as an administration user with permissions to configure the module.
-    $admin = $this->drupalCreateUser(array('administer content types'));
-    $this->drupalLogin($admin);
-
-    // Submit the settings form with new settings.
-    $this->drupalPost('admin/settings/uuid', $options, t('Save configuration'));
-    foreach ($options as $name => $value) {
-      $this->assertFieldByName(
-        $name,
-        $value,
-        t("Field %name successfully verified.", array('%name' => $name)),
-        t("Settings form")
-      );
-    }
-
-    // Logout and set back previously logged in user.
-    if ($loggedin) {
-      $this->drupalLogin($loggedin);
-    }
-    else {
-      $this->drupalLogout();
-    }
-  }
-
- /**
-  * Verify the argument is a valid uuid and performs validation.
-  *
-  * @param string $uuid
-  *   string to be validated as uuid.
-  * @param string $message
-  *   Message to show in this assertion.
-  * @param string $group
-  *   Name of the group for this assertion.
-  */
-  function assertIsUUID($uuid, $message = NULL, $group = NULL) {
-    $this->assertNotNull($uuid, t("Value is not null"), $group);
-    $this->assertTrue(uuid_is_valid($uuid), $message, $group);
-  }
-
-  /**
-   * Sets a fail message in the test for further reviewing.
-   * @param text $message
-   *   text message to show.
-   */
-  function markIncomplete($message) {
-    $this->pass($message, 'Debug');
+  function assertUUID($uuid, $message = NULL) {
+    $this->assertTrue(uuid_is_valid($uuid), $message);
   }
 
 }
 
 /**
- * Unit tests for UUID resolver API functions.
- *
- * @todo I don't even have clear what API functions to test, as heyrocker is
- * about to submit a patch with updated functions, so I'm just leaving this
- * testcase as a placeholder for now.
+ * Tests for the UUID API functions.
  */
-class UUIDUnitTestCase extends UUIDTestHelper {
+class UUIDAPITestCase extends UUIDTestCase {
+
   public static function getInfo() {
     return array(
-      'name' => 'Unitary testcase',
-      'description' => 'Unitary tests for uuid api functions.',
+      'name' => 'UUID API',
+      'description' => 'Tests the UUID API functions.',
       'group' => 'UUID',
-    );
-  }
-
-  /**
-   * Mark testcase as incomplete.
-   */
-  function testMarkIncomplete() {
-    $this->markIncomplete(t("This test in incomplete."));
-  }
-
-
-}
-
-/**
- * Test basic uuid resolver functionality.
- *
- * @todo include taxonomy and comment uuid tests.
- */
-class UUIDFunctionalityTestCase extends UUIDTestHelper {
-  public static function getInfo() {
-    // Include dependencies to be handled by the testbot.
-    return array(
-      'name' => 'Functionality testcase',
-      'description' => 'Test basic UUID functionality.',
-      'group' => 'UUID',
-    );
-  }
-
-  /**
-   * Verify uuid behavior with default settings. I'm assuming default settings
-   * should be restrictive, but actually, the radio type settings are not being
-   * defaulted to any value.
-   */
-
-  /**
-   * Verify uuid behavior for nodes.
-   */
-  function testDefaultNodeUUID() {
-    // Create a user.
-    $account = $this->drupalCreateUser(array('create page content'));
-
-    // Create a node with that user.
-    $options = array(
-      'uid'  => $account->uid,
-      'type' => 'page',
-    );
-    $object = $this->drupalCreateNode($options);
-
-    // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with default settings."),
-      t("Node UUID")
-    );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with default settings."),
-      t("Node revision UUID")
-    );
-
-    // Create a new revision for this node.
-    $object->revision = 1;
-    node_save($object);
-
-    // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with default settings."),
-      t("Node UUID")
-    );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with default settings."),
-      t("Node revision UUID")
-    );
-
-    // Show current node only in verbose mode.
-    $this->verbose(print_r($object, 1));
-  }
-
-  /**
-   * Verify uuid behavior for users.
-   */
-  function testDefaultUserUUID() {
-    // Create a user.
-    $object = $this->drupalCreateUser();
-
-    // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("User has not uuid field attached with default settings."),
-      t("User UUID")
-    );
-  }
-
-  /**
-   * Verify uuid behavior for taxonomy.
-   */
-  function testDefaultTaxonomyUUID() {
-    $this->markIncomplete(t("This test is incomplete."));
-  }
-
-  /**
-   * Verify uuid behavior for comment.
-   */
-  function testDefaultCommentUUID() {
-    $this->markIncomplete(t("This test is incomplete."));
-  }
-
-  /**
-   * Verify uuid behavior with disabled settings. All settings are forced to
-   * disabled, so new 'entities' should not get any uuid assigned.
-   */
-
-  /**
-   * Verify uuid behavior for nodes.
-   */
-  function testDisabledNodeUUID() {
-    // Set module settings.
-    $settings = array(
-      'uuid_automatic_for_nodes[page]'  => FALSE,
-    );
-    $this->uuidSettingsSet($settings);
-
-    // Create a user.
-    $account = $this->drupalCreateUser(array('create page content'));
-
-    // Create a node with that user.
-    $options = array(
-      'uid'  => $account->uid,
-      'type' => 'page',
-    );
-    $object = $this->drupalCreateNode($options);
-
-    // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with disabled settings."),
-      t("Node UUID")
-    );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with disabled settings."),
-      t("Node revision UUID")
-    );
-
-    // Create a new revision for this node.
-    $object->revision = 1;
-    node_save($object);
-
-    // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("Node has not uuid field attached with default settings."),
-      t("Node UUID")
-    );
-    $this->assertFalse(
-      isset($object->revision_uuid),
-      t("Node has not revision_uuid field attached with default settings."),
-      t("Node revision UUID")
-    );
-
-  }
-
-  /**
-   * Verify uuid behavior for users.
-   */
-  function testDisabledUserUUID() {
-    // Set module settings.
-    $settings = array(
-      'uuid_automatic_for_users' => FALSE,
-    );
-    $this->uuidSettingsSet($settings);
-
-    // Create a user.
-    $object = $this->drupalCreateUser();
-
-    // Verify fields are not attached to the node.
-    $this->assertFalse(
-      isset($object->uuid),
-      t("User has not uuid field attached with disabled settings."),
-      t("User UUID")
-    );
-  }
-
-  /**
-   * Verify uuid behavior for taxonomy.
-   */
-  function testDisabledTaxonomyUUID() {
-    $this->markIncomplete(t("This test is incomplete."));
-  }
-
-  /**
-   * Verify uuid behavior for comment.
-   */
-  function testDisabledCommentUUID() {
-    $this->markIncomplete(t("This test is incomplete."));
-  }
-
-  /**
-   * Verify uuid behavior with enabled settings. All settings are forced to
-   * enabled, so new 'entities' should get an uuid assigned.
-   */
-
-  /**
-   * Verify uuid behavior for nodes.
-   */
-  function testEnabledNodeUUID() {
-    // Set module settings.
-    $settings = array(
-      'uuid_automatic_for_nodes[page]'  => TRUE,
-    );
-    $this->uuidSettingsSet($settings);
-
-    // Create a user.
-    $account = $this->drupalCreateUser(array('create page content'));
-
-    // Create a node with that user.
-    $options = array(
-      'uid'  => $account->uid,
-      'type' => 'page',
-    );
-    $object = $this->drupalCreateNode($options);
-
-    // Verify fields are attached to the node.
-    $this->assertIsUUID(
-      $object->uuid,
-      t("Node has uuid field attached with enabled settings."),
-      t("Node UUID")
-    );
-    $this->assertIsUUID(
-      $object->revision_uuid,
-      t("Node has revision uuid field attached with enabled settings."),
-      t("Node revision UUID")
-    );
-
-    // Show current node only in verbose mode.
-    $this->verbose(print_r($object, 1));
-
-    // make a copy of this node.
-    $node = clone($object);
-
-    // Create a new revision for this node.
-    $object->revision = 1;
-    node_save($object);
-
-    // Verify fields are attached to the node.
-    $this->assertIsUUID(
-      $object->uuid,
-      t("Node has uuid field attached with enabled settings."),
-      t("Node UUID")
-    );
-    $this->assertIsUUID(
-      $object->revision_uuid,
-      t("Node has revision uuid field attached with enabled settings."),
-      t("Node revision UUID")
-    );
-
-    // A new revision uuid must be created.
-    $this->assertEqual(
-      $object->uuid,
-      $node->uuid,
-      t("Node uuid is being updated successfully."),
-      t("Node UUID")
-    );
-    $this->assertNotEqual(
-      $object->uuid,
-      $node->uuid,
-      t("Node revision uuid is being updated successfully."),
-      t("Node revision UUID")
-    );
-
-    // Show current node only in verbose mode.
-    $this->verbose(print_r($node, 1));
-  }
-
-  /**
-   * Verify uuid behavior for users.
-   */
-  function testEnabledUserUUID() {
-    // Set module settings.
-    $settings = array(
-      'uuid_automatic_for_users' => TRUE,
-    );
-    $this->uuidSettingsSet($settings);
-
-    // Create a user.
-    $object = $this->drupalCreateUser();
-
-    // Verify fields are attached to the user.
-    $this->assertIsUUID(
-      $object->uuid,
-      t("User has uuid field attached with enabled settings."),
-      t("User UUID")
-    );
-  }
-
-  /**
-   * Verify uuid behavior for taxonomy.
-   */
-  function testEnabledTaxonomyUUID() {
-    $this->markIncomplete(t("This test is incomplete."));
-  }
-
-  /**
-   * Verify uuid behavior for comment.
-   */
-  function testEnabledCommentUUID() {
-    $this->markIncomplete(t("This test is incomplete."));
-  }
-
-}
-
-
-/**
- * Test uuid and token integration.
- *
- * @todo taxonomy and comment tokends are not yet defined.
- * @link http://drupal.org/node/324712 @endlink
- */
-class UUIDTokenFunctionalityTestCase extends UUIDTestHelper {
-  public static function getInfo() {
-    // Include dependencies to be handled by the testbot.
-    return array(
-      'name' => 'Token integration testcase',
-      'description' => 'Test UUID token integration.',
-      'group' => 'UUID',
-      'dependencies' => array('token'),
     );
   }
 
   function setUp() {
-    // By default, the helper class will include the uuid module, leaving the
-    // option to include additional modules by the test class
-    parent::setUp(array('token'));
+    parent::setUp('uuid');
+  }
+
+  function testAPIFunctions() {
+    // This is a valid UUID, we know that.
+    $valid_uuid = '0ab26e6b-f074-4e44-9da6-1205fa0e9761';
+    // Test the uuid_is_valid() function.
+    $this->assertUUID($valid_uuid, 'UUID validation works.');
+
+    // The default generator is 'php'.
+    $uuid = uuid_generate();
+    $this->assertUUID($uuid, 'PHP generator works.');
+
+    // Test the 'mysql' generator.
+    variable_set('uuid_generator', 'mysql');
+    drupal_static_reset('uuid_generate');
+    $uuid = uuid_generate();
+    $this->assertUUID($uuid, 'MySQL generator works.');
+  }
+
+}
+
+/**
+ * Tests for the Entity API implementation of the UUID API.
+ */
+class UUIDEntityTestCase extends UUIDTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Entity implementation',
+      'description' => 'Tests the Entity API implementation of the UUID API.',
+      'group' => 'UUID',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('uuid', 'entity', 'taxonomy', 'comment');
   }
 
   /**
-   * Verify global type token integration.
-   *
-   * Expect the token:
-   *  - uuid: an arbitraty generated uuid.
+   * Tests for making sure UUIDs are properly generated for entities.
    */
-  function testDefaultTokens() {
-    // Do not continue if token module is not enabled.
-    if (!function_exists('token_replace')) {
-      $this->pass(t('Token module is not installed. Skipping this test.'));
-      return;
-    }
+  function testCRUD() {
+    // Create a node to work with.
+    $node = $this->drupalCreateNode(array('title' => 'original title'));
+    $nid = $node->nid;
+    $original_uuid = $node->uuid;
+    $original_vuuid = $node->vuuid;
+    // Test if UUID was properly generated.
+    $this->assertUUID($node->uuid, 'Node UUID was generated.');
+    $this->assertUUID($node->vuuid, 'Node revision UUID was generated.');
 
-    // Perform a global token replacement for [uuid] token.
-    $uuid = token_replace("[uuid]", 'global', NULL);
-    $this->assertIsUUID(
-      $uuid,
-      t("UUID Token successfully generated."),
-      t("Global tokens")
-    );
+    // Test node update, without creating new revision.
+    $node->title = 'new title';
+    $node->revision = FALSE;
+    node_save($node);
+    // Load the updated node.
+    $node = node_load($nid);
+    $this->assertEqual($original_uuid, $node->uuid, 'Node UUID was intact after update, when not creating new revision.');
+    $this->assertEqual($original_vuuid, $node->vuuid, 'Node revision UUID was intact after updating, when not creating new revision.');
+
+    // Test node update, with new revision.
+    $node->title = 'newer title';
+    $node->revision = TRUE;
+    node_save($node);
+    $node = node_load($nid);
+    $this->assertEqual($original_uuid, $node->uuid, 'Node UUID was intact after updating, when creating new revision.');
+    $this->assertNotEqual($original_vuuid, $node->vuuid, 'A new node revision UUID was generated, when creating new revision.');
+    $this->assertUUID($node->vuuid, 'The new node revision UUID was valid.');
+
+    // Test generating UUID for a user.
+    $user = $this->drupalCreateUser();
+    $uid = $user->uid;
+    $original_uuid = $user->uuid;
+    $this->assertUUID($original_uuid, 'User UUID was generated.');
+
+    // Test updating user.
+    user_save($user, array('name' => 'new name'));
+    $user = user_load($uid);
+    $this->assertEqual($original_uuid, $user->uuid, 'User UUID was intact after update.');
   }
 
   /**
-   * Verify node type token integration (by content-type).
-   *
-   * Configure the module settings to support uuid for a content type. Create a
-   * node of that content type and expect the tokens:
-   *  - uuid
-   *  - revision-uuid
-   *  - author-uuid
+   * Tests for the Entity API functions provided to support UUID operations.
    */
-  function testDefaultNodeTokens() {
-    // Do not continue if token module is not enabled.
-    if (!function_exists('token_replace')) {
-      $this->markImcomplete(t('Token module is not installed. Skipping this test.'));
-      return;
-    }
+  function testUUIDEntityAPIFunctions() {
 
-    /*
-     * Verify the behaviour when the node UUID and revision UUID fields.
-     */
+    // TODO: Test entity_get_id_by_uuid().
 
-    // Set module settings.
-    $settings = array(
-      'uuid_automatic_for_nodes[page]'  => TRUE,
-      'uuid_automatic_for_users'        => TRUE,
-    );
-    $this->uuidSettingsSet($settings);
+    // TODO: Test entity_get_uuid_by_id().
 
-    // Create a user.
-    $account = $this->drupalCreateUser(array('create page content'));
+    // TODO: Test entity_load_by_uuid().
 
-    // Create a node with that user.
-    $options = array(
-      'uid'  => $account->uid,
-      'type' => 'page',
-    );
-    $object = $this->drupalCreateNode($options);
+    // Test entity_save_by_uuid().
+    $node = $this->drupalCreateNode(array('title' => 'original title'));
+    $nid = $node->nid;
+    $original_uuid = $node->uuid;
+    $original_vuuid = $node->vuuid;
+    // We change the node ID and revision ID but still keeps the same UUIDs.
+    // Saving it should still make it map to the "old" IDs.
+    $node->nid = rand();
+    $node->vid = rand();
+    $node->title = 'new title';
+    $node->revision = FALSE;
+    entity_save_by_uuid('node', $node);
 
-    // This is the list of tokens and the expected value.
-    $checks = array(
-      'uuid'          => $object->uuid,
-      'revision-uuid' => $object->revision_uuid,
-      'author-uuid'   => $account->uuid,
-    );
-    foreach ($checks as $token => $value) {
-      $this->assertEqual(
-        token_replace("[" . $token . "]", 'node', $object),
-        (string) $value,
-        t("Token %token successfully verified.", array('%token' => $token)),
-        t("Node tokens")
-      );
-    }
+    // This should still give us the updated node.
+    $node = node_load($nid);
+    $this->assertEqual($node->title, 'new title', 'Saving node by UUID mapped to correct node, when not creating new revision.');
+    $this->assertEqual($original_uuid, $node->uuid, 'Node UUID was intact after saving by UUID, when not creating new revision.');
+    $this->assertEqual($original_vuuid, $node->vuuid, 'Node revison UUID was intact after saving by UUID, when not creating new revision.');
 
+    // Test the same thing again, but now triggering a new revision.
+    $node = node_load($nid);
+    $node->nid = rand();
+    $node->vid = rand();
+    $node->title = 'newer title';
+    $node->revision = TRUE;
+    entity_save_by_uuid('node', $node);
+
+    $node = node_load($nid);
+    $this->assertEqual($node->title, 'newer title', 'Saving node by UUID mapped to correct node, when creating new revision.');
+    $this->assertEqual($original_uuid, $node->uuid, 'Node UUID was intact after saving by UUID, when creating new revision.');
+    $this->assertNotEqual($original_vuuid, $node->vuuid, 'A new node revison UUID was generated after saving by UUID, when creating new revision.');
+    $this->assertUUID($node->vuuid, 'New node revision UUID was valid.');
+
+    // Test saving user by UUID.
+    $user = $this->drupalCreateUser();
+    $uid = $user->uid;
+    $original_uuid = $user->uuid;
+    $user->uid = rand();
+    $user->name = 'new name';
+    entity_save_by_uuid('user', $user);
+
+    $user = user_load($uid);
+    $this->assertEqual($user->name, 'new name', 'Saving user by UUID mapped to correct user.');
+    $this->assertEqual($original_uuid, $user->uuid, 'User UUID was intact after saving by UUID.');
   }
 
-  /**
-   * Verify user type token integration.
-   *
-   * Create a user and expect the token:
-   *  - uuid
-   */
-  function testDefaultUserTokens() {
-    // Do not continue if token module is not enabled.
-    if (!function_exists('token_replace')) {
-      $this->pass(t('Token module is not installed. Skipping this test.'));
-      return;
-    }
+}
 
-    /*
-     * Verify behavior when uuid is enabled for users.
-     */
+/**
+ * Tests for the UUID synchronization.
+ */
+class UUIDSyncTestCase extends UUIDTestCase {
 
-    // Set module settings.
-    $settings = array(
-      'uuid_automatic_for_users' => TRUE,
+  public static function getInfo() {
+    return array(
+      'name' => 'UUID sync',
+      'description' => 'Tests the UUID synchronization.',
+      'group' => 'UUID',
     );
-    $this->uuidSettingsSet($settings);
+  }
 
-    // Create a user.
-    $object = $this->drupalCreateUser();
+  function setUp() {
+    parent::setUp('uuid', 'taxonomy', 'comment');
+  }
 
-    // This is the list of tokens and the expected value.
-    $checks = array(
-      'uuid'  => $object->uuid,
-    );
-
-    foreach ($checks as $token => $value) {
-      $this->assertEqual(
-        token_replace("[" . $token . "]", 'user', $object),
-        (string) $value,
-        t("Token %token successfully verified.", array('%token' => $token)),
-        t("User tokens")
-      );
-    }
+  function testSync() {
+    // TODO: Test the UUID synchronization.
   }
 
 }
