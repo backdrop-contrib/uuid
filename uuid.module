@@ -26,7 +26,7 @@ function uuid_menu() {
 }
 
 /**
- * Implemention of hook_permission().
+ * Implements of hook_permission().
  */
 function uuid_permission() {
   return array(

@@ -143,7 +143,7 @@ function entity_save_by_uuid($entity_type, $entity) {
     $id_key = $info['entity keys']['id'];
     $uuid_key = $info['entity keys']['uuid'];
     // Fetch the local ID by its UUID.
-    $id = entity_get_id_by_uuid($entity_type, $entity->{$uuid_key});
+    $id = reset(entity_get_id_by_uuid($entity_type, array($entity->{$uuid_key})));
     // Set the correct local ID.
     if (empty($id)) {
       unset($entity->{$id_key});
@@ -157,7 +157,7 @@ function entity_save_by_uuid($entity_type, $entity) {
       $vid_key = $info['entity keys']['revision'];
       $vuuid_key = $info['entity keys']['revision uuid'];
       // Fetch the local revision ID by its UUID.
-      $vid = entity_get_id_by_uuid($entity_type, $entity->{$vuuid_key}, TRUE);
+      $vid = reset(entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE));
       if (empty($vid)) {
         unset($entity->{$vid_key});
         $entity->revision = TRUE;
@@ -187,7 +187,7 @@ function entity_save_by_uuid($entity_type, $entity) {
  *   IDs and UUIDs are returned instead.
  */
 function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
-  $info = entity_get_inf($entity_type);
+  $info = entity_get_info($entity_type);
   // Find out what entity keys to use.
   if (!$revision) {
     $table = $info['base table'];
@@ -205,7 +205,7 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
   $query->addField('t', $id_key, 'id');
   $query->addField('t', $uuid_key, 'uuid');
   $query
-    ->condition($uuid_key, $uuids, 'IN')
+    ->condition($uuid_key, array_values($uuids), 'IN')
     ->execute();
 
   $ids = array();
