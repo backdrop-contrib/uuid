@@ -204,7 +204,7 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
   $query = db_select($table, ' t');
   $query->addField('t', $id_key, 'id');
   $query->addField('t', $uuid_key, 'uuid');
-  $query
+  $result = $query
     ->condition($uuid_key, array_values($uuids), 'IN')
     ->execute();
 
