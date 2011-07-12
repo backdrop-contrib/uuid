@@ -78,7 +78,7 @@ function uuid_uuid_info() {
     );
   }
   $info['php'] = array(
-    'title' => t('PHP fallback'),
+    'title' => t('PHP'),
     'callback' => 'uuid_php',
   );
   return $info;

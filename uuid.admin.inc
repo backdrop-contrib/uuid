@@ -11,6 +11,17 @@
 function uuid_admin_form() {
   $form = array();
 
+  $form['sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Synchronization'),
+  );
+
+  $form['sync']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create missing UUIDs'),
+    '#submit' => array('uuid_admin_sync_submit'),
+  );
+
   $form['settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Settings'),
@@ -26,19 +37,8 @@ function uuid_admin_form() {
     '#type' => 'select',
     '#title' => t('UUID Generator'),
     '#default_value' => variable_get('uuid_generator', 'php'),
-    '#description' => t('The method used to generate the UUID'),
+    '#description' => t('The method used to generate the UUID.'),
     '#options' => $options,
-  );
-
-  $form['sync'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Synchronization'),
-  );
-
-  $form['sync']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Create missing UUIDs'),
-    '#submit' => array('uuid_admin_sync_submit'),
   );
 
   return system_settings_form($form);
