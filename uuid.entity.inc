@@ -129,7 +129,10 @@ function _entity_uuid_sync_table($table, $id_field, $uuid_field) {
  *
  * @see entity_load()
  */
-function entity_load_by_uuid($entity_type, $uuids = array()) {}
+function entity_load_by_uuid($entity_type, $uuids = array(), $conditions = array(), $reset = FALSE) {
+  $ids = entity_get_id_by_uuid($entity_type, $uuids);
+  return entity_load($entity_type, $ids, $conditions, $reset);
+}
 
 /**
  * Permanently saves an entity by its UUID.
@@ -194,10 +197,14 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
     $id_key = $info['entity keys']['id'];
     $uuid_key = $info['entity keys']['uuid'];
   }
-  else {
+  elseif (isset($info['revision table'])) {
     $table = $info['revision table'];
     $id_key = $info['entity keys']['revision'];
     $uuid_key = $info['entity keys']['revision uuid'];
+  }
+  // If we want revision IDs, but the entity doesn't support it. Return empty.
+  else {
+    return array();
   }
 
   // Get all UUIDs in one query.
@@ -229,7 +236,38 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
  *   Array of entity UUIDs keyed by their IDs. If $revision is TRUE revision
  *   IDs and UUIDs are returned instead.
  */
-function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {}
+function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
+  $info = entity_get_info($entity_type);
+  // Find out what entity keys to use.
+  if (!$revision) {
+    $table = $info['base table'];
+    $id_key = $info['entity keys']['id'];
+    $uuid_key = $info['entity keys']['uuid'];
+  }
+  elseif (isset($info['revision table'])) {
+    $table = $info['revision table'];
+    $id_key = $info['entity keys']['revision'];
+    $uuid_key = $info['entity keys']['revision uuid'];
+  }
+  // If we want revision UUIDs, but the entity doesn't support it. Return empty.
+  else {
+    return array();
+  }
+
+  // Get all UUIDs in one query.
+  $query = db_select($table, ' t');
+  $query->addField('t', $id_key, 'id');
+  $query->addField('t', $uuid_key, 'uuid');
+  $result = $query
+    ->condition($id_key, array_values($ids), 'IN')
+    ->execute();
+
+  $ids = array();
+  foreach ($result as $record) {
+    $ids[$record->id] = $record->uuid;
+  }
+  return $ids;
+}
 
 /**
  * @} End of "UUID support for Entity API"
