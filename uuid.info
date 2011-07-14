@@ -3,5 +3,4 @@ description = Extends the Entity API and adds support for universally unique ide
 core = 7.x
 package = UUID
 configure = admin/config/system/uuid
-dependencies[] = entity
 files[] = uuid.test

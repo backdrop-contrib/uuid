@@ -135,11 +135,17 @@ function entity_load_by_uuid($entity_type, $uuids = array(), $conditions = array
 }
 
 /**
- * Permanently saves an entity by its UUID.
+ * Permanently saves an entity by its UUID. This function depends on the
+ * Entity API module to provide the 'entity_save()' function.
  *
  * @see entity_save()
  */
 function entity_save_by_uuid($entity_type, $entity) {
+  // This function, and this function only, depends on the entity module.
+  if (!module_exists('entity')) {
+    watchdog('uuid', 'Calling %function requires the %module module.', array('%function' => __FUNCTION__, '%module' => 'entity'), WATCHDOG_ERROR);
+  }
+
   $info = entity_get_info($entity_type);
   if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
     // Get the keys for local ID and UUID.
