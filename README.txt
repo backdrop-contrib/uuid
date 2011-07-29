@@ -9,3 +9,4 @@ Current features include:
     * Sub modules to enable UUID for different entities.
     * API for implemening UUIDs for contrib entities.
 
+Please read uuid_ossp/README.txt before enabling the uuid_ossp module.
