@@ -126,6 +126,9 @@ function _entity_uuid_sync_table($table, $id_field, $uuid_field) {
 
 /**
  * Load entities by their UUIDs.
+ * 
+ * This function is mostly useful if you want to load an entity from the local
+ * database that only should contain UUID references.
  *
  * @see entity_load()
  */
@@ -142,6 +145,9 @@ function entity_load_by_uuid($entity_type, $uuids = array(), $conditions = array
 /**
  * Permanently saves an entity by its UUID. This function depends on the
  * Entity API module to provide the 'entity_save()' function.
+ *
+ * This function is mostly useful if you want to save an entity into the local
+ * database that only contains UUID references.
  *
  * @see entity_save()
  */
