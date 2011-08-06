@@ -28,17 +28,38 @@ module_load_include('inc', 'uuid', 'uuid.core');
  * Implements of hook_menu().
  */
 function uuid_menu() {
-  return array(
-    'admin/config/system/uuid' => array(
-      'title' => 'Universally unique identifiers',
-      'description' => 'Configure universally unique identifiers.',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('uuid_admin_form'),
-      'access arguments' => array('administer uuid'),
-      'type' => MENU_NORMAL_ITEM,
-      'file' => 'uuid.admin.inc',
-    ),
+  $items = array();
+  $items['admin/config/system/uuid'] = array(
+    'title' => 'Universally unique identifiers',
+    'description' => 'Configure universally unique identifiers.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uuid_admin_form'),
+    'access arguments' => array('administer uuid'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'uuid.admin.inc',
   );
+
+  // Conditional support for Devel. A good thing for developers.
+  if (module_exists('devel')) {
+    $entity_types = array(
+      'user' => array('path' => 'user/%user/devel/load-by-uuid', 'arg' => 1),
+      'node' => array('path' => 'node/%node/devel/load-by-uuid', 'arg' => 1),
+      'comment' => array('path' => 'comment/%comment/devel/load-by-uuid', 'arg' => 1),
+      'taxonomy_term' => array('path' => 'taxonomy/term/%taxonomy_term/devel/load-by-uuid', 'arg' => 2),
+    );
+    foreach ($entity_types as $entity_type => $info) {
+      $items[$info['path']] = array(
+        'title' => 'Load by UUID',
+        'page callback' => 'uuid_devel_load_by_uuid',
+        'page arguments' => array($entity_type, $info['arg']),
+        'access arguments' => array('access devel information'),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'uuid.admin.inc',
+        'weight' => 100,
+      );
+    }
+  }
+  return $items;
 }
 
 /**
