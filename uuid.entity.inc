@@ -131,7 +131,12 @@ function _entity_uuid_sync_table($table, $id_field, $uuid_field) {
  */
 function entity_load_by_uuid($entity_type, $uuids = array(), $conditions = array(), $reset = FALSE) {
   $ids = entity_get_id_by_uuid($entity_type, $uuids);
-  return entity_load($entity_type, $ids, $conditions, $reset);
+  $entities = entity_load($entity_type, $ids, $conditions, $reset);
+
+  // Let other modules transform local ID references to UUID references.
+  module_invoke_all('entity_load_by_uuid', $entities, $entity_type);
+
+  return $entities;
 }
 
 /**
@@ -175,6 +180,9 @@ function entity_save_by_uuid($entity_type, $entity) {
         $entity->{$vid_key} = $vid;
       }
     }
+
+    // Let other modules transform UUID references to local ID references.
+    module_invoke_all('entity_presave_by_uuid', $entity, $entity_type);
 
     // Save the entity.
     entity_save($entity_type, $entity);
