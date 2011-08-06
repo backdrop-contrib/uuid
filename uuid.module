@@ -5,8 +5,24 @@
  * Main module functions for the uuid module.
  */
 
-module_load_include('inc', 'uuid', 'uuid');
-module_load_include('inc', 'uuid', 'uuid.entity');
+/**
+ * Include main API functions.
+ */
+include_once './uuid.inc';
+
+/**
+ * Include the Entity API implementation of the UUID API.
+ */
+include_once './uuid.entity.inc';
+
+/**
+ * Include implementations for all core modules.
+ *
+ * Instead of having separate modules for all core implementations this file
+ * implements all of them in their own name space. In some cases this adds some
+ * unecessary code weight, but instead it saves us from module mania.
+ */
+include_once './uuid.core.inc';
 
 /**
  * Implements of hook_menu().
