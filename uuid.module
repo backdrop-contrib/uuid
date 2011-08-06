@@ -8,12 +8,12 @@
 /**
  * Include main API functions.
  */
-include_once './uuid.inc';
+module_load_include('inc', 'uuid', 'uuid');
 
 /**
  * Include the Entity API implementation of the UUID API.
  */
-include_once './uuid.entity.inc';
+module_load_include('inc', 'uuid', 'uuid.entity');
 
 /**
  * Include implementations for all core modules.
@@ -22,7 +22,7 @@ include_once './uuid.entity.inc';
  * implements all of them in their own name space. In some cases this adds some
  * unecessary code weight, but instead it saves us from module mania.
  */
-include_once './uuid.core.inc';
+module_load_include('inc', 'uuid', 'uuid.core');
 
 /**
  * Implements of hook_menu().
