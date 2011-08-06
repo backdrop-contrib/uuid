@@ -56,7 +56,7 @@ function uuid_permission() {
 /**
  * Implements of hook_module_implements_alter().
  *
- * Moves the hook_entity_info_alter() Implements to the bottom so it is
+ * Moves implementation of hook_entity_info_alter() to the bottom so it is
  * invoked after all modules relying on the entity API.
  *
  * @see uuid_entity_info_alter()
