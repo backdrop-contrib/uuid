@@ -187,8 +187,13 @@ function entity_save_by_uuid($entity_type, $entity) {
       }
     }
 
-    // Let other modules transform UUID references to local ID references.
-    module_invoke_all('entity_presave_by_uuid', $entity, $entity_type);
+    try {
+      // Let other modules transform UUID references to local ID references.
+      module_invoke_all('entity_presave_by_uuid', $entity, $entity_type);
+    }
+    catch (Exception $e) {
+      throw $e;
+    }
 
     // Save the entity.
     entity_save($entity_type, $entity);
