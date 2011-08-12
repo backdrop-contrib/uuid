@@ -154,7 +154,7 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
 function entity_uuid_save($entity_type, $entity) {
   // This function, and this function only, depends on the entity module.
   if (!module_exists('entity')) {
-    watchdog('uuid', 'Calling %function requires the %module module.', array('%function' => __FUNCTION__, '%module' => 'entity'), WATCHDOG_ERROR);
+    watchdog('uuid', 'Calling %function requires the entity module.', array('%function' => __FUNCTION__), WATCHDOG_ERROR);
   }
 
   $info = entity_get_info($entity_type);
