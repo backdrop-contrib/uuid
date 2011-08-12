@@ -70,6 +70,37 @@ function comment_entity_uuid_load(&$entities, $entity_type) {
 }
 
 /**
+ * Implements hook_entity_uuid_load().
+ */
+function field_entity_uuid_load(&$entities, $entity_type) {
+  foreach ($entities as $i => $entity) {
+    list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
+    $instances = field_info_instances($entity_type, $bundle_name);
+
+    foreach ($instances as $field_name => $instance) {
+      $field = field_info_field($field_name);
+      foreach ($entity->{$field_name} as $langcode => &$items) {
+        // Invoke 'hook_field_uuid_load'. We can't use module_invoke() since
+        // that is not passing by reference.
+        $function = $field['module'] . '_field_uuid_load';
+        if (function_exists($function)) {
+          $function($entity_type, $entity, $field, $instance, $langcode, $entities[$i]->{$field_name}[$langcode]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_uuid_load().
+ */
+function taxonomy_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as $i => $item) {
+    $items[$i]['tid'] = reset(entity_get_uuid_by_id($entity_type, array($item['tid'])));
+  }
+}
+
+/**
  * Implements hook_entity_uuid_presave().
  */
 function user_entity_uuid_presave(&$entity, $entity_type) {
