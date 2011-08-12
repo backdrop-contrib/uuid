@@ -60,7 +60,7 @@ function uuid_devel_load_by_uuid($entity_type, $entity) {
   if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
     // Get the keys for local ID and UUID.
     $uuid_key = $info['entity keys']['uuid'];
-    $uuid_entity = reset(entity_load_by_uuid($entity_type, array($entity->{$uuid_key})));
+    $uuid_entity = reset(entity_uuid_load($entity_type, array($entity->{$uuid_key})));
     return kdevel_print_object($uuid_entity, '$' . $entity_type . '->');
   }
   else {

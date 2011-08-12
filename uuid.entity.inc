@@ -125,19 +125,19 @@ function _entity_uuid_sync_table($table, $id_field, $uuid_field) {
 }
 
 /**
- * Load entities by their UUIDs.
+ * Load entities only containing UUID references.
  * 
  * This function is mostly useful if you want to load an entity from the local
  * database that only should contain UUID references.
  *
  * @see entity_load()
  */
-function entity_load_by_uuid($entity_type, $uuids = array(), $conditions = array(), $reset = FALSE) {
+function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(), $reset = FALSE) {
   $ids = entity_get_id_by_uuid($entity_type, $uuids);
   $entities = entity_load($entity_type, $ids, $conditions, $reset);
 
   // Let other modules transform local ID references to UUID references.
-  module_invoke_all('entity_load_by_uuid', $entities, $entity_type);
+  module_invoke_all('entity_uuid_load', $entities, $entity_type);
 
   return $entities;
 }
@@ -151,7 +151,7 @@ function entity_load_by_uuid($entity_type, $uuids = array(), $conditions = array
  *
  * @see entity_save()
  */
-function entity_save_by_uuid($entity_type, $entity) {
+function entity_uuid_save($entity_type, $entity) {
   // This function, and this function only, depends on the entity module.
   if (!module_exists('entity')) {
     watchdog('uuid', 'Calling %function requires the %module module.', array('%function' => __FUNCTION__, '%module' => 'entity'), WATCHDOG_ERROR);
@@ -189,7 +189,7 @@ function entity_save_by_uuid($entity_type, $entity) {
 
     try {
       // Let other modules transform UUID references to local ID references.
-      module_invoke_all('entity_presave_by_uuid', $entity, $entity_type);
+      module_invoke_all('entity_uuid_presave', $entity, $entity_type);
     }
     catch (Exception $e) {
       throw $e;

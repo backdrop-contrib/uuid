@@ -56,7 +56,7 @@ function uuid_services_services_resources() {
  */
 function _uuid_services_entity_update($uuid, $entity_type, $entity) {
   $entity = (object)$entity;
-  entity_save_by_uuid($entity_type, $entity);
+  entity_uuid_save($entity_type, $entity);
   return (object)array(
     'id' => $uuid,
     'uri' => 'entity/' . $uuid,

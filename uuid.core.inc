@@ -6,9 +6,9 @@
  */
 
 /**
- * Implements hook_entity_load_by_uuid().
+ * Implements hook_entity_uuid_load().
  */
-function user_entity_load_by_uuid(&$entities, $entity_type) {
+function user_entity_uuid_load(&$entities, $entity_type) {
   foreach ($entities as $entity) {
     // Transform all local ID properties to UUIDs.
     switch ($entity_type) {
@@ -33,9 +33,9 @@ function user_entity_load_by_uuid(&$entities, $entity_type) {
 }
 
 /**
- * Implements hook_entity_load_by_uuid().
+ * Implements hook_entity_uuid_load().
  */
-function node_entity_load_by_uuid(&$entities, $entity_type) {
+function node_entity_uuid_load(&$entities, $entity_type) {
   foreach ($entities as $entity) {
     // Transform all local ID properties to UUIDs.
     switch ($entity_type) {
@@ -50,9 +50,9 @@ function node_entity_load_by_uuid(&$entities, $entity_type) {
 }
 
 /**
- * Implements hook_entity_load_by_uuid().
+ * Implements hook_entity_uuid_load().
  */
-function comment_entity_load_by_uuid(&$entities, $entity_type) {
+function comment_entity_uuid_load(&$entities, $entity_type) {
   foreach ($entities as $entity) {
     // Transform all local ID properties to UUIDs.
     switch ($entity_type) {
@@ -70,9 +70,9 @@ function comment_entity_load_by_uuid(&$entities, $entity_type) {
 }
 
 /**
- * Implements hook_entity_presave_by_uuid().
+ * Implements hook_entity_uuid_presave().
  */
-function user_entity_presave_by_uuid(&$entity, $entity_type) {
+function user_entity_uuid_presave(&$entity, $entity_type) {
   // Transform all UUID properties to local IDs, if they exist. Otherwise try
   // sane defaults.
   switch ($entity_type) {
@@ -105,9 +105,9 @@ function user_entity_presave_by_uuid(&$entity, $entity_type) {
 }
 
 /**
- * Implements hook_entity_presave_by_uuid().
+ * Implements hook_entity_uuid_presave().
  */
-function node_entity_presave_by_uuid(&$entity, $entity_type) {
+function node_entity_uuid_presave(&$entity, $entity_type) {
   // Transform all UUID properties to local IDs, if they exist.
   switch ($entity_type) {
     case 'node':
@@ -118,9 +118,9 @@ function node_entity_presave_by_uuid(&$entity, $entity_type) {
 }
 
 /**
- * Implements hook_entity_presave_by_uuid().
+ * Implements hook_entity_uuid_presave().
  */
-function comment_entity_presave_by_uuid(&$entity, $entity_type) {
+function comment_entity_uuid_presave(&$entity, $entity_type) {
   // Transform all UUID properties to local IDs, if they exist.
   switch ($entity_type) {
     case 'node':
