@@ -70,10 +70,10 @@ class UUIDEntityTestCase extends UUIDTestCase {
   function setUp() {
     // Some tests depends on the Entity API module.
     if (module_exists('entity')) {
-      parent::setUp('uuid', 'entity');
+      parent::setUp('uuid', 'entity', 'node', 'comment');
     }
     else {
-      parent::setUp('uuid');
+      parent::setUp('uuid', 'node', 'comment');
     }
   }
 
@@ -82,8 +82,8 @@ class UUIDEntityTestCase extends UUIDTestCase {
    */
   function testEntityCRUD() {
     // Create some entities that we will work with.
-    $node = $this->drupalCreateNode(array('title' => 'original title'));
     $user = $this->drupalCreateUser();
+    $node = $this->drupalCreateNode(array('title' => 'original title'));
 
     // Test if UUID was properly generated.
     $this->assertUUID($node->uuid, 'Node UUID was generated.');
@@ -122,8 +122,8 @@ class UUIDEntityTestCase extends UUIDTestCase {
    */
   function testUUIDEntityFunctions() {
     // Create some entities that we will work with.
-    $node = $this->drupalCreateNode(array('title' => 'original title'));
     $user = $this->drupalCreateUser();
+    $node = $this->drupalCreateNode(array('title' => 'original title'));
 
     // Test entity_get_id_by_uuid().
     $nids = entity_get_id_by_uuid('node', array($node->uuid), FALSE);
@@ -137,23 +137,23 @@ class UUIDEntityTestCase extends UUIDTestCase {
     $vuuids = entity_get_uuid_by_id('node', array($node->vid), TRUE);
     $this->assertTrue(in_array($node->vuuid, $vuuids), 'Lookup of entity revision UUID works.');
 
-    // Test entity_load_by_uuid().
-    $node_test = reset(entity_load_by_uuid('node', array($node->uuid), array(), TRUE));
+    // Test entity_uuid_load().
+    $node_test = reset(entity_uuid_load('node', array($node->uuid), array(), TRUE));
     $this->assertEqual($node_test->nid, $node->nid, 'Node was correctly loaded by UUID.');
 
-    $user_test = reset(entity_load_by_uuid('user', array($user->uuid), array(), TRUE));
+    $user_test = reset(entity_uuid_load('user', array($user->uuid), array(), TRUE));
     $this->assertEqual($user_test->uid, $user->uid, 'User was correctly loaded by UUID.');
 
     // The following tests depends on the Entity API module.
     if (module_exists('entity')) {
-      // Test entity_save_by_uuid() for an entity type that support
+      // Test entity_uuid_save() for an entity type that support
       // revisions (node).
       $node_test = clone $node;
       $node_test->nid = rand();
       $node_test->vid = rand();
       $node_test->title = 'new title';
       $node_test->revision = FALSE;
-      entity_save_by_uuid('node', $node_test);
+      entity_uuid_save('node', $node_test);
 
       // This should still give us the updated node.
       $node_test = node_load($node->nid, FALSE, TRUE);
@@ -167,7 +167,7 @@ class UUIDEntityTestCase extends UUIDTestCase {
       $node_test->vid = rand();
       $node_test->title = 'newer title';
       $node_test->revision = TRUE;
-      entity_save_by_uuid('node', $node_test);
+      entity_uuid_save('node', $node_test);
 
       $node_test = node_load($node->nid, FALSE, TRUE);
       $this->assertEqual($node_test->title, 'newer title', 'Saving node by UUID mapped to correct node, when creating new revision.');
@@ -175,12 +175,12 @@ class UUIDEntityTestCase extends UUIDTestCase {
       $this->assertNotEqual($node_test->vuuid, $node->vuuid, 'A new node revison UUID was generated after saving by UUID, when creating new revision.');
       $this->assertUUID($node_test->vuuid, 'New node revision UUID was valid.');
 
-      // Test entity_save_by_uuid() for an entity type that doesn't support
+      // Test entity_uuid_save() for an entity type that doesn't support
       // revisions (user).
       $user_test = clone $user;
       $user_test->uid = rand();
       $user_test->name = 'new name';
-      entity_save_by_uuid('user', $user_test);
+      entity_uuid_save('user', $user_test);
 
       $user_test = user_load($user->uid, TRUE);
       $this->assertEqual($user_test->name, 'new name', 'Saving user by UUID mapped to correct user.');

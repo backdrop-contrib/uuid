@@ -45,29 +45,30 @@ function user_entity_uuid_presave(&$entity, $entity_type) {
   // sane defaults.
   switch ($entity_type) {
     case 'node':
-      $ids = entity_get_id_by_uuid('user', array($entity->uid, $entity->revision_uid));
-      if (!isset($ids[$entity->uid])) {
-         throw new Exception(t("Node entity can't be saved without existing user reference."));
+      $uuids = isset($entity->revision_uid) ? array($entity->uid, $entity->revision_uid) : array($entity->uid);
+      $ids = entity_get_id_by_uuid('user', $uuids);
+      // We might now have UUIDs.
+      if (isset($ids[$entity->uid])) {
+        $entity->uid = $ids[$entity->uid];
+        $entity->revision_uid = isset($ids[$entity->revision_uid]) ? $ids[$entity->revision_uid] : $ids[$entity->uid];
       }
-      $entity->uid = $ids[$entity->uid];
-      $entity->revision_uid = isset($ids[$entity->revision_uid]) ? $ids[$entity->revision_uid] : $ids[$entity->uid];
       break;
 
     case 'comment':
       $ids = entity_get_id_by_uuid('user', array($entity->uid, $entity->u_uid));
-      if (!isset($ids[$entity->uid])) {
-         throw new Exception(t("Comment entity can't be saved without existing user reference."));
+      // We might not have UUIDs.
+      if (isset($ids[$entity->uid])) {
+        $entity->uid = $ids[$entity->uid];
+        $entity->u_uid = isset($ids[$entity->u_uid]) ? $ids[$entity->u_uid] : $ids[$entity->uid];
       }
-      $entity->uid = $ids[$entity->uid];
-      $entity->u_uid = isset($ids[$entity->u_uid]) ? $ids[$entity->u_uid] : $ids[$entity->uid];
       break;
 
     case 'file':
       $ids = entity_get_id_by_uuid('user', array($entity->uid));
-      if (!isset($ids[$entity->uid])) {
-         throw new Exception(t("File entity can't be saved without existing user reference."));
+      // We might not have UUIDs.
+      if (isset($ids[$entity->uid])) {
+        $entity->uid = $ids[$entity->uid];
       }
-      $entity->uid = $ids[$entity->uid];
       break;
   }
 }
@@ -124,8 +125,10 @@ function comment_entity_uuid_load(&$entities, $entity_type) {
     // Transform all local ID properties to UUIDs.
     switch ($entity_type) {
       case 'node':
-        $uuids = entity_get_uuid_by_id('user', array($entity->last_comment_uid));
-        $entity->last_comment_uid = $uuids[$entity->last_comment_uid];
+        if (isset($entity->last_comment_uid)) {
+          $uuids = entity_get_uuid_by_id('user', array($entity->last_comment_uid));
+          $entity->last_comment_uid = $uuids[$entity->last_comment_uid];
+        }
         break;
 
       case 'comment':
@@ -143,8 +146,10 @@ function comment_entity_uuid_presave(&$entity, $entity_type) {
   // Transform all UUID properties to local IDs, if they exist.
   switch ($entity_type) {
     case 'node':
-      $ids = entity_get_id_by_uuid('user', array($entity->last_comment_uid));
-      $entity->last_comment_uid = isset($ids[$entity->last_comment_uid]) ? $ids[$entity->last_comment_uid] : 0;
+      if (isset($entity->last_comment_uid)) {
+        $ids = entity_get_id_by_uuid('user', array($entity->last_comment_uid));
+        $entity->last_comment_uid = isset($ids[$entity->last_comment_uid]) ? $ids[$entity->last_comment_uid] : 0;
+      }
       break;
 
     case 'comment':
