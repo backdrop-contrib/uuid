@@ -5,3 +5,4 @@ package = Services - resources
 
 dependencies[] = services
 dependencies[] = uuid
+dependencies[] = entity
