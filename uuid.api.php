@@ -36,3 +36,35 @@ function hook_uuid_info() {
 function hook_uuid_sync() {
   // Do what you need to do to generate missing UUIDs for you implementation.
 }
+
+/**
+ * Let modules transform their properties with local IDs to UUIDs when an
+ * entity is loaded.
+ */
+function hook_entity_uuid_load(&$entities, $entity_type) {
+
+}
+
+/**
+ * Let modules transform their fields with local IDs to UUIDs when an entity
+ * is loaded.
+ */
+function hook_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
+
+}
+
+/**
+ * Let modules transform their properties with UUIDs to local IDs when an
+ * entity is saved.
+ */
+function hook_entity_uuid_presave(&$entity, $entity_type) {
+
+}
+
+/**
+ * Let modules transform their fields with UUIDs to local IDs when an entity
+ * is saved.
+ */
+function hook_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+
+}
