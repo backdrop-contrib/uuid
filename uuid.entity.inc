@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @defgroup uuid_entity_hooks UUID Implementss of Entity API
+ * @defgroup uuid_entity_hooks UUID implementation of Entity API
  * @{
  */
 
@@ -82,7 +82,7 @@ function uuid_entity_presave($entity, $entity_type) {
 }
 
 /**
- * @} End of "UUID Implementss of Entity API"
+ * @} End of "UUID implementation of Entity API"
  */
 
 /**
