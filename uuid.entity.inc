@@ -71,10 +71,7 @@ function uuid_entity_presave($entity, $entity_type) {
     }
     if (!empty($info['entity keys']['revision uuid'])) {
       $vuuid_key = $info['entity keys']['revision uuid'];
-      if ($entity->revision == TRUE) {
-        $entity->{$vuuid_key} = uuid_generate();
-      }
-      if (empty($entity->{$vuuid_key})) {
+      if (isset($entity->revision) && $entity->revision == TRUE) {
         $entity->{$vuuid_key} = uuid_generate();
       }
     }
