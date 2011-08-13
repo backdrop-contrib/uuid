@@ -187,6 +187,11 @@ function file_entity_uuid_presave(&$entity, $entity_type) {
 /**
  * @defgroup uuid_field Field module implementations
  * @{
+ *
+ * @todo
+ *   Take better advantage of the multi load functionality in
+ *   entity_get_*id_by_*id() in all field implementations. We probably need to
+ *   loop twice over $items, but we will save SQL queries.
  */
 
 /**
@@ -287,4 +292,53 @@ function image_field_uuid_presave($entity_type, $entity, $field, $instance, $lan
 
 /**
  * @} End of "Field module implementations"
+ */
+
+/**
+ * @defgroup uuid_references References module implementations
+ * @{
+ *
+ * @todo
+ *   When the UUID API has stabilized these implementations can be moved to the
+ *   appropriate sub modules of References.
+ */
+
+/**
+ * Implements hook_field_uuid_load().
+ */
+function node_reference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as &$item) {
+    $item['nid'] = reset(entity_get_uuid_by_id('node', array($item['nid'])));
+  }
+}
+
+/**
+ * Implements hook_field_uuid_presave().
+ */
+function node_reference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as &$item) {
+    $item['nid'] = reset(entity_get_id_by_uuid('node', array($item['nid'])));
+  }
+}
+
+/**
+ * Implements hook_field_uuid_load().
+ */
+function user_reference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as &$item) {
+    $item['uid'] = reset(entity_get_uuid_by_id('user', array($item['uid'])));
+  }
+}
+
+/**
+ * Implements hook_field_uuid_presave().
+ */
+function user_reference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as &$item) {
+    $item['uid'] = reset(entity_get_id_by_uuid('user', array($item['uid'])));
+  }
+}
+
+/**
+ * @} End of "References module implementations"
  */
