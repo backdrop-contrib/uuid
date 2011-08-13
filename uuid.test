@@ -274,7 +274,7 @@ class UUIDCommentTestCase extends CommentHelperCase {
     // This is sub optimal, but due to how CommentHelperCase::setUp() is 
     // constructed we are enforced to do this. So unfortunately this test
     // depends on 'entity' module for now.
-    module_enable(array('uuid', 'entity'));
+    module_enable(array('uuid', 'entity'), TRUE);
 
     $user = $this->drupalCreateUser();
     $this->drupalLogin($user);
@@ -322,10 +322,6 @@ class UUIDSyncTestCase extends UUIDTestCase {
       'description' => 'Tests the UUID synchronization.',
       'group' => 'UUID',
     );
-  }
-
-  function setUp() {
-    parent::setUp();
   }
 
   /**
