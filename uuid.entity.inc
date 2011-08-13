@@ -92,39 +92,6 @@ function uuid_entity_presave($entity, $entity_type) {
  */
 
 /**
- * Implements of hook_uuid_sync().
- */
-function entity_uuid_sync() {
-  foreach (entity_get_info() as $entity_type => $info) {
-    if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
-      _entity_uuid_sync_table($info['base table'], $info['entity keys']['id'], $info['entity keys']['uuid']);
-      if (!empty($info['entity keys']['revision uuid'])) {
-        _entity_uuid_sync_table($info['revision table'], $info['entity keys']['revision'], $info['entity keys']['revision uuid']);
-      }
-    }
-  }
-}
-
-/**
- * Helper function that executes the update on the actual table.
- */
-function _entity_uuid_sync_table($table, $id_field, $uuid_field) {
-  // Fetch empty records.
-  $result = db_select($table, 't')
-    ->fields('t', array($id_field))
-    ->condition(db_or()->condition($uuid_field, '')->isNull($uuid_field))
-    ->execute();
-
-  // Update empty records.
-  foreach ($result as $record) {
-    db_update($table)
-      ->fields(array($uuid_field => uuid_generate()))
-      ->condition($id_field, $record->{$id_field})
-      ->execute();
-  }
-}
-
-/**
  * Load entities only containing UUID references.
  * 
  * This function is mostly useful if you want to load an entity from the local
