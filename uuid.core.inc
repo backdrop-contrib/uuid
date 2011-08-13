@@ -16,7 +16,8 @@
 function node_entity_uuid_load(&$entities, $entity_type) {
   if ($entity_type == 'node') {
     foreach ($entities as $entity) {
-      $uuids = entity_get_uuid_by_id('user', array($entity->uid, $entity->revision_uid));
+      $ids = !empty($entity->revision_uid) ? array($entity->uid, $entity->revision_uid) : array($entity->uid);
+      $uuids = entity_get_uuid_by_id('user', $ids);
 
       // 'uid' property.
       if (isset($uuids[$entity->uid])) {
@@ -24,14 +25,16 @@ function node_entity_uuid_load(&$entities, $entity_type) {
       }
 
       // 'revision_uid' property.
-      if (isset($uuids[$entity->revision_uid])) {
+      if (!empty($entity->revision_uid) && isset($uuids[$entity->revision_uid])) {
         $entity->revision_uid = $uuids[$entity->revision_uid];
       }
 
       // 'tnid' property.
       if (!empty($entity->tnid)) {
         $uuids = entity_get_uuid_by_id('node', array($entity->tnid));
-        $entity->tnid = $uuids[$entity->tnid];
+        if (isset($uuids[$entity->tnid])) {
+          $entity->tnid = $uuids[$entity->tnid];
+        }
       }
     }
   }
@@ -43,7 +46,7 @@ function node_entity_uuid_load(&$entities, $entity_type) {
 function node_entity_uuid_presave(&$entity, $entity_type) {
   // Transform all UUID properties to local IDs, if they exist.
   if ($entity_type == 'node') {
-    $uuids = isset($entity->revision_uid) ? array($entity->uid, $entity->revision_uid) : array($entity->uid);
+    $uuids = !empty($entity->revision_uid) ? array($entity->uid, $entity->revision_uid) : array($entity->uid);
     $ids = entity_get_id_by_uuid('user', $uuids);
 
     // 'uid' property.
@@ -52,7 +55,7 @@ function node_entity_uuid_presave(&$entity, $entity_type) {
     }
 
     // 'revision_uid' property.
-    if (isset($ids[$entity->revision_uid])) {
+    if (!empty($entity->revision_uid) && isset($ids[$entity->revision_uid])) {
       $entity->revision_uid = $ids[$entity->revision_uid];
     }
 
