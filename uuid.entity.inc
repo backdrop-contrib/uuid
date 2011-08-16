@@ -101,7 +101,9 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
   $entities = entity_load($entity_type, $ids, $conditions, $reset);
 
   // Let other modules transform local ID references to UUID references.
-  module_invoke_all('entity_uuid_load', $entities, $entity_type);
+  if (!empty($entities)) {
+    module_invoke_all('entity_uuid_load', $entities, $entity_type);
+  }
 
   return $entities;
 }
@@ -179,6 +181,9 @@ function entity_uuid_save($entity_type, $entity) {
  *   IDs and UUIDs are returned instead.
  */
 function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
+  if (empty($uuids)) {
+    return FALSE;
+  }
   $info = entity_get_info($entity_type);
   // Find out what entity keys to use.
   if (!$revision) {
