@@ -1,0 +1,8 @@
+name = UUID entity resource
+description = Service for remotely saving entities based on their UUID
+core = 7.x
+package = Services - resources
+
+dependencies[] = services
+dependencies[] = uuid
+dependencies[] = entity

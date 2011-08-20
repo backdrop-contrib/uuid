@@ -8,47 +8,62 @@
 /**
  * Menu callback: options for UUID.
  */
-function uuid_admin() {
+function uuid_admin_form() {
   $form = array();
+
+  $form['sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Synchronization'),
+  );
+
+  $form['sync']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create missing UUIDs'),
+    '#submit' => array('uuid_admin_sync_submit'),
+  );
 
   $form['settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Settings'),
   );
 
+  $options = array();
+  $generators = uuid_get_info();
+  foreach ($generators as $name => $info) {
+    $options[$name] = $info['title'];
+  }
+
   $form['settings']['uuid_generator'] = array(
     '#type' => 'select',
     '#title' => t('UUID Generator'),
-    '#default_value' => variable_get('uuid_generator', array()),
-    '#description' => t('The method used to generate the UUID'),
-    '#options' => _uuid_admin_generators()
-  );
-
-  $form['sync'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Synchronization'),
-  );
-  $form['sync']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Create missing UUIDs'),
-    '#submit' => array('uuid_sync_all'),
+    '#default_value' => variable_get('uuid_generator', 'php'),
+    '#description' => t('The method used to generate the UUID.'),
+    '#options' => $options,
   );
 
   return system_settings_form($form);
 }
 
 /**
- * Prepares a list of UUID generators for select #options in settings form.
- *
- * @return
- *   List of available UUID generators.
+ * Submit handler for the UUID sync.
  */
-function _uuid_admin_generators() {
-  $options = array();
-  $implementations = uuid_info();
-  foreach ($implementations as $name => $data) {
-    $options[$name] = $data['title'];
-  }
+function uuid_admin_sync_submit() {
+  uuid_sync_all();
+  drupal_set_message(t('Generated missing UUIDs.'));
+}
 
-  return $options;
+/**
+ * Page callback to display Devel information about a UUID entity.
+ */
+function uuid_devel_load_by_uuid($entity_type, $entity) {
+  $info = entity_get_info($entity_type);
+  if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
+    // Get the keys for local ID and UUID.
+    $uuid_key = $info['entity keys']['uuid'];
+    $uuid_entity = reset(entity_uuid_load($entity_type, array($entity->{$uuid_key})));
+    return kdevel_print_object($uuid_entity, '$' . $entity_type . '->');
+  }
+  else {
+    return t("This entity doesn't support UUID.");
+  }
 }
