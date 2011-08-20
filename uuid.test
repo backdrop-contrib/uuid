@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Test suite for UUID module.
+ */
+
+/**
  * Base class with some helper methods.
  */
 class UUIDTestCase extends DrupalWebTestCase {

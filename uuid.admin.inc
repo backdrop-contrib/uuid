@@ -22,25 +22,6 @@ function uuid_admin_form() {
     '#submit' => array('uuid_admin_sync_submit'),
   );
 
-  $form['settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Settings'),
-  );
-
-  $options = array();
-  $generators = uuid_get_info();
-  foreach ($generators as $name => $info) {
-    $options[$name] = $info['title'];
-  }
-
-  $form['settings']['uuid_generator'] = array(
-    '#type' => 'select',
-    '#title' => t('UUID Generator'),
-    '#default_value' => variable_get('uuid_generator', 'php'),
-    '#description' => t('The method used to generate the UUID.'),
-    '#options' => $options,
-  );
-
   return system_settings_form($form);
 }
 

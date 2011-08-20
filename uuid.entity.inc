@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Entity related functions for UUID module.
+ */
+
+/**
  * @defgroup uuid_entity_hooks UUID implementation of Entity API
  * @{
  */

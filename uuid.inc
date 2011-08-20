@@ -1,23 +1,33 @@
 <?php
 
 /**
- * @defgroup uuid UUID handling
- * @{
- * Functions for the UUID handling.
+ * @file
+ * Handling of universally unique identifiers.
  */
 
 /**
  * Generates an universally unique identifier.
  *
+ * This function first checks for the PECL alternative for generating
+ * universally unique identifiers. If that doesn't exist, then it falls back on
+ * PHP for generating that.
+ *
  * @return
  *   An UUID, made up of 32 hex digits and 4 hyphens.
  */
 function uuid_generate() {
-  $callback = &drupal_static(__FUNCTION__);
+  $callback = drupal_static(__FUNCTION__);
+
   if (empty($callback)) {
-    $generator = variable_get('uuid_generator', 'php');
-    $info = uuid_get_info();
-    $callback = $info[$generator]['callback'];
+    if (function_exists('uuid_create') && !function_exists('uuid_make')) {
+      $callback = '_uuid_generate_pecl';
+    }
+    elseif (function_exists('com_create_guid')) {
+      $callback = '_uuid_generate_com';
+    }
+    else {
+      $callback = '_uuid_generate_php';
+    }
   }
   return $callback();
 }
@@ -43,82 +53,19 @@ function uuid_is_valid($uuid) {
 }
 
 /**
- * Fetches information about the available UUID implementations.
- */
-function uuid_get_info() {
-  $info = &drupal_static(__FUNCTION__);
-  if (empty($info)) {
-    $info = module_invoke_all('uuid_info');
-  }
-  return $info;
-}
-
-/**
- * Implements hook_uuid_info().
- */
-function uuid_uuid_info() {
-  $info = array();
-  // PECL and OSSP are 2 incompatiable implementations in PHP that use the same namespace.
-  if (function_exists('uuid_create') && !function_exists('uuid_make')) {
-    $info['pecl'] = array(
-      'title' => t('PECL Extension'),
-      'callback' => 'uuid_pecl',
-    );
-  }
-  if (Database::getConnection()->databaseType() == 'mysql') {
-    $info['mysql'] = array(
-      'title' => t('MySQL'),
-      'callback' => 'uuid_mysql',
-    );
-  }
-  if (function_exists('com_create_guid')) {
-    $info['com'] = array(
-      'title' => t('Windows COM'),
-      'callback' => 'uuid_com',
-    );
-  }
-  $info['php'] = array(
-    'title' => t('PHP'),
-    'callback' => 'uuid_php',
-  );
-  return $info;
-}
-
-/**
- * @} End of "UUID handling"
- */
-
-/**
- * @defgroup uuid_generators UUID generators
- * @{
- * Different UUID generators.
- */
-
-/**
  * Generates a UUID using the Windows internal GUID generator.
  *
  * @see http://php.net/com_create_guid
  */
-function uuid_com() {
+function _uuid_generate_com() {
   // Remove {} wrapper and make lower case to keep result consistent.
   return drupal_strtolower(trim(com_create_guid(), '{}'));
 }
 
 /**
- * Generates a UUID using MySQL's implementation.
- *
- * @see http://dev.mysql.com/doc/refman/5.0/en/miscellaneous-functions.html#function_uuid
+ * Generates an universally unique identifier using the PECL extension.
  */
-function uuid_mysql() {
-  return db_query('SELECT UUID()')->fetchField();
-}
-
-/**
- * Generates a UUID using the PECL extension.
- *
- * @see http://pecl.php.net/package/uuid
- */
-function uuid_pecl() {
+function _uuid_generate_pecl() {
   return uuid_create(UUID_TYPE_DEFAULT);
 }
 
@@ -127,7 +74,7 @@ function uuid_pecl() {
  *
  * @see http://php.net/uniqid#65879
  */
-function uuid_php() {
+function _uuid_generate_php() {
   // The field names refer to RFC 4122 section 4.1.2.
   return sprintf('%04x%04x-%04x-%03x4-%04x-%04x%04x%04x',
     // 32 bits for "time_low".
@@ -143,7 +90,3 @@ function uuid_php() {
     mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
   );
 }
-
-/**
- * @} End of "UUID generators"
- */
