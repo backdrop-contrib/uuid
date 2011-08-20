@@ -1,5 +1,0 @@
-name = OSSP UUID generator
-description = UUID generator using the OSSP PHP extension.
-core = 7.x
-package = UUID
-dependencies[] = uuid
