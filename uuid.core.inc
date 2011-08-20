@@ -199,7 +199,7 @@ function file_entity_uuid_presave(&$entity, $entity_type) {
  */
 function field_entity_uuid_load(&$entities, $entity_type) {
   foreach ($entities as $i => $entity) {
-    list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
+    list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
     $instances = field_info_instances($entity_type, $bundle_name);
 
     foreach ($instances as $field_name => $instance) {
@@ -220,7 +220,7 @@ function field_entity_uuid_load(&$entities, $entity_type) {
  * Implements hook_entity_uuid_presave().
  */
 function field_entity_uuid_presave(&$entity, $entity_type) {
-  list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
+  list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
   $instances = field_info_instances($entity_type, $bundle_name);
 
   foreach ($instances as $field_name => $instance) {
@@ -279,7 +279,7 @@ function file_field_uuid_presave($entity_type, $entity, $field, $instance, $lang
  */
 function image_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
   // Image fields works exactly the same way as file fields.
-  file_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items);
+  file_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, $items);
 }
 
 /**
@@ -287,7 +287,7 @@ function image_field_uuid_load($entity_type, $entity, $field, $instance, $langco
  */
 function image_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   // Image fields works exactly the same way as file fields.
-  file_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items);
+  file_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, $items);
 }
 
 /**
