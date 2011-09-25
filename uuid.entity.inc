@@ -107,7 +107,13 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
 
   // Let other modules transform local ID references to UUID references.
   if (!empty($entities)) {
-    module_invoke_all('entity_uuid_load', $entities, $entity_type);
+    $hook = 'entity_uuid_load';
+    foreach (module_implements($hook) as $module) {
+      $function = $module . '_' . $hook;
+      if (function_exists($function)) {
+        $function($entities, $entity_type);
+      }
+    }
   }
 
   return $entities;
@@ -160,7 +166,13 @@ function entity_uuid_save($entity_type, $entity) {
 
     try {
       // Let other modules transform UUID references to local ID references.
-      module_invoke_all('entity_uuid_presave', $entity, $entity_type);
+      $hook = 'entity_uuid_presave';
+      foreach (module_implements($hook) as $module) {
+        $function = $module . '_' . $hook;
+        if (function_exists($function)) {
+          $function($entity, $entity_type);
+        }
+      }
     }
     catch (Exception $e) {
       throw $e;

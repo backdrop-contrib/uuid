@@ -268,15 +268,14 @@ class UUIDCommentTestCase extends CommentHelperCase {
     $this->assertTrue(uuid_is_valid($uuid), $message);
   }
 
+  function setUp() {
+    parent::setUp(array('uuid', 'entity'));
+  }
+
   /**
    * Test CRUD on comments with UUID functions.
    */
   function testCommentCRUD() {
-    // This is sub optimal, but due to how CommentHelperCase::setUp() is 
-    // constructed we are enforced to do this. So unfortunately this test
-    // depends on 'entity' module for now.
-    module_enable(array('uuid', 'entity'), TRUE);
-
     $user = $this->drupalCreateUser();
     $this->drupalLogin($user);
     $node = $this->drupalCreateNode();
