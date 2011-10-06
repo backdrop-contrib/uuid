@@ -261,7 +261,7 @@ function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
   // Get all UUIDs in one query.
   return db_select($table, ' t')
     ->fields('t', array($id_key, $uuid_key))
-    ->condition($uuid_key, array_values($uids), 'IN')
+    ->condition($uuid_key, array_values($ids), 'IN')
     ->execute()
     ->fetchAllKeyed();
 }
