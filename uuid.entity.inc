@@ -95,7 +95,7 @@ function uuid_entity_presave($entity, $entity_type) {
 
 /**
  * Load entities only containing UUID references.
- * 
+ *
  * This function is mostly useful if you want to load an entity from the local
  * database that only should contain UUID references.
  *
@@ -219,18 +219,11 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
   }
 
   // Get all UUIDs in one query.
-  $query = db_select($table, ' t');
-  $query->addField('t', $id_key, 'id');
-  $query->addField('t', $uuid_key, 'uuid');
-  $result = $query
+  return db_select($table, ' t')
+    ->fields('t', array($uuid_key, $id_key))
     ->condition($uuid_key, array_values($uuids), 'IN')
-    ->execute();
-
-  $ids = array();
-  foreach ($result as $record) {
-    $ids[$record->uuid] = $record->id;
-  }
-  return $ids;
+    ->execute()
+    ->fetchAllKeyed();
 }
 
 /**
@@ -266,18 +259,11 @@ function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
   }
 
   // Get all UUIDs in one query.
-  $query = db_select($table, ' t');
-  $query->addField('t', $id_key, 'id');
-  $query->addField('t', $uuid_key, 'uuid');
-  $result = $query
-    ->condition($id_key, array_values($ids), 'IN')
-    ->execute();
-
-  $ids = array();
-  foreach ($result as $record) {
-    $ids[$record->id] = $record->uuid;
-  }
-  return $ids;
+  return db_select($table, ' t')
+    ->fields('t', array($id_key, $uuid_key))
+    ->condition($uuid_key, array_values($uids), 'IN')
+    ->execute()
+    ->fetchAllKeyed();
 }
 
 /**
