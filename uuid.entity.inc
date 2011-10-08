@@ -132,6 +132,7 @@ function entity_uuid_save($entity_type, $entity) {
   // This function, and this function only, depends on the entity module.
   if (!module_exists('entity')) {
     watchdog('uuid', 'Calling %function requires the entity module.', array('%function' => __FUNCTION__), WATCHDOG_ERROR);
+    return FALSE;
   }
 
   $info = entity_get_info($entity_type);
@@ -180,6 +181,23 @@ function entity_uuid_save($entity_type, $entity) {
 
     // Save the entity.
     entity_save($entity_type, $entity);
+
+    try {
+      /*
+        Let other modules transform UUID references to local ID references
+        where they rely on the entity ID.
+      */
+      $hook = 'entity_uuid_save';
+      foreach (module_implements($hook) as $module) {
+        $function = $module . '_' . $hook;
+        if (function_exists($function)) {
+          $function($entity, $entity_type);
+        }
+      }
+    }
+    catch (Exception $e) {
+      throw $e;
+    }
   }
 }
 
