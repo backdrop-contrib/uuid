@@ -14,21 +14,27 @@ module_load_include('inc', 'uuid', 'uuid.schema');
  * Implements of hook_schema_alter().
  */
 function uuid_schema_alter(&$schema = array()) {
-  // We aren't calling entity_get_info() directly here becase it's caching too
-  // hard and can't be used inside hook_schema_alter(). Also, we are only using
-  // a fraction of what we original logic fetches and we don't need the fancy
-  // logic for default values since it's a prerequsite that
-  // $info['entity keys']['uuid'] is set for the alteration to kick in.
-  $entity_info = module_invoke_all('entity_info');
-  drupal_alter('entity_info', $entity_info);
+  // Initialize flag to prevent recursion.
+  $altering = &drupal_static(__FUNCTION__, FALSE);
 
-  foreach ($entity_info as $entity_type => $info) {
-    if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
-      // Add the Universally Unique Identifier column to the definition.
-      uuid_schema_generate($schema, $info['base table'], $info['entity keys']['uuid']);
-      if (!empty($info['revision table']) && !empty($info['entity keys']['revision uuid'])) {
-        // Add the Universally Unique Version Identifier to the definition.
-        uuid_schema_generate($schema, $info['revision table'], $info['entity keys']['revision uuid']);
+  // Prevent recursion.
+  if (!$altering) {
+    $altering = TRUE;
+
+    // Force rebuilding.
+    drupal_static_reset('entity_get_info');
+    $entity_info = entity_get_info();
+
+    $altering = FALSE;
+
+    foreach ($entity_info as $entity_type => $info) {
+      if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
+        // Add the Universally Unique Identifier column to the definition.
+        uuid_schema_generate($schema, $info['base table'], $info['entity keys']['uuid']);
+        if (!empty($info['revision table']) && !empty($info['entity keys']['revision uuid'])) {
+          // Add the Universally Unique Version Identifier to the definition.
+          uuid_schema_generate($schema, $info['revision table'], $info['entity keys']['revision uuid']);
+        }
       }
     }
   }
