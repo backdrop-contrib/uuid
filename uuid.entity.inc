@@ -71,6 +71,7 @@ function uuid_entity_load(&$entities, $entity_type) {
     $id_key = $info['entity keys']['id'];
     $uuid_key = $info['entity keys']['uuid'];
     if (!empty($info['entity keys']['revision uuid'])) {
+      $vid_key = $info['entity keys']['revision'];
       $vuuid_key = $info['entity keys']['revision uuid'];
     }
     $ids = array();
@@ -82,8 +83,8 @@ function uuid_entity_load(&$entities, $entity_type) {
         return;
       }
       $ids[] = $entity->{$id_key};
-      if (isset($vuuid_key)) {
-        $vids[] = $entity->{$vuuid_key};
+      if (isset($vuuid_key) && !empty($entity->{$vid_key})) {
+        $vids[] = $entity->{$vid_key};
       }
     }
     $uuids = entity_get_uuid_by_id($entity_type, $ids);
@@ -94,7 +95,7 @@ function uuid_entity_load(&$entities, $entity_type) {
       if (empty($entity->{$uuid_key})) {
         $entity->{$uuid_key} = $uuids[$entity->{$id_key}];
       }
-      if (isset($vuuid_key) && empty($entity->{$vuuid_key})) {
+      if (isset($vuuid_key) && empty($entity->{$vuuid_key}) && !empty($entity->{$vid_key}) && !empty($vuuids[$entity->{$vid_key}])) {
         $entity->{$vuuid_key} = $vuuids[$entity->{$vid_key}];
       }
     }
