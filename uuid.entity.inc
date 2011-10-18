@@ -63,6 +63,45 @@ function uuid_entity_property_info_alter(&$info) {
 }
 
 /**
+ * Implements of hook_entity_load().
+ */
+function uuid_entity_load(&$entities, $entity_type) {
+  $info = entity_get_info($entity_type);
+  if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
+    $id_key = $info['entity keys']['id'];
+    $uuid_key = $info['entity keys']['uuid'];
+    if (!empty($info['entity keys']['revision uuid'])) {
+      $vuuid_key = $info['entity keys']['revision uuid'];
+    }
+    $ids = array();
+    $vids = array();
+    foreach ($entities as $entity) {
+      // Some entities sets the UUID them selfs (i.e. nodes). If the first one
+      // does have a UUID, it means the others have too. So, stop here.
+      if (isset($entity->{$uuid_key}) && !empty($entity->{$uuid_key})) {
+        return;
+      }
+      $ids[] = $entity->{$id_key};
+      if (isset($vuuid_key)) {
+        $vids[] = $entity->{$vuuid_key};
+      }
+    }
+    $uuids = entity_get_uuid_by_id($entity_type, $ids);
+    if (!empty($vids)) {
+      $vuuids = entity_get_uuid_by_id($entity_type, $vids, TRUE);
+    }
+    foreach ($entities as &$entity) {
+      if (empty($entity->{$uuid_key})) {
+        $entity->{$uuid_key} = $uuids[$entity->{$id_key}];
+      }
+      if (isset($vuuid_key) && empty($entity->{$vuuid_key})) {
+        $entity->{$vuuid_key} = $vuuids[$entity->{$vid_key}];
+      }
+    }
+  }
+}
+
+/**
  * Implements of hook_entity_presave().
  *
  * This is where all UUID-enabled entities get their UUIDs.
@@ -103,7 +142,18 @@ function uuid_entity_presave($entity, $entity_type) {
  */
 function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(), $reset = FALSE) {
   $ids = entity_get_id_by_uuid($entity_type, $uuids);
-  $entities = entity_load($entity_type, $ids, $conditions, $reset);
+  $results = entity_load($entity_type, $ids, $conditions, $reset);
+  $entities = array();
+
+  // We need to do this little magic here, because objects are passed by
+  // reference. And because hook_entity_uuid_load() has the intention changing
+  // primary properties and fields from local IDs to UUIDs it will also change
+  // DrupalDefaultEntityController::entityCache by reference which is a static
+  // cache of entities. And that is not something we want.
+  foreach ($results as $key => $entity) {
+    // This will avoid passing our loaded entities by reference.
+    $entities[$key] = clone $entity;
+  }
 
   // Let other modules transform local ID references to UUID references.
   if (!empty($entities)) {
@@ -154,8 +204,11 @@ function entity_uuid_save($entity_type, $entity) {
       // Get the keys for local revison ID and revision UUID.
       $vid_key = $info['entity keys']['revision'];
       $vuuid_key = $info['entity keys']['revision uuid'];
+      $vid = NULL;
       // Fetch the local revision ID by its UUID.
-      $vid = reset(entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE));
+      if (isset($entity->{$vuuid_key})) {
+        $vid = reset(entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE));
+      }
       if (empty($vid)) {
         unset($entity->{$vid_key});
         $entity->revision = TRUE;
@@ -183,10 +236,6 @@ function entity_uuid_save($entity_type, $entity) {
     entity_save($entity_type, $entity);
 
     try {
-      /*
-        Let other modules transform UUID references to local ID references
-        where they rely on the entity ID.
-      */
       $hook = 'entity_uuid_save';
       foreach (module_implements($hook) as $module) {
         $function = $module . '_' . $hook;
@@ -237,7 +286,7 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
   }
 
   // Get all UUIDs in one query.
-  return db_select($table, ' t')
+  return db_select($table, 't')
     ->fields('t', array($uuid_key, $id_key))
     ->condition($uuid_key, array_values($uuids), 'IN')
     ->execute()
@@ -277,9 +326,9 @@ function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
   }
 
   // Get all UUIDs in one query.
-  return db_select($table, ' t')
+  return db_select($table, 't')
     ->fields('t', array($id_key, $uuid_key))
-    ->condition($uuid_key, array_values($ids), 'IN')
+    ->condition($id_key, array_values($ids), 'IN')
     ->execute()
     ->fetchAllKeyed();
 }
