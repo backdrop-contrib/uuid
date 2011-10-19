@@ -254,6 +254,9 @@ function entity_uuid_save($entity_type, $entity) {
 /**
  * Helper function that retrieves entity IDs by their UUIDs.
  *
+ * @todo
+ *   Statically cache as many IDs as possible and limit the query.
+ *
  * @param $entity_type
  *   The entity type we should be dealing with.
  * @param $uuids
@@ -296,6 +299,9 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
 
 /**
  * Helper function that retrieves UUIDs by their entity IDs.
+ *
+ * @todo
+ *   Statically cache as many IDs as possible and limit the query.
  *
  * @param $entity_type
  *   The entity type we should be dealing with.

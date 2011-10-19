@@ -32,14 +32,14 @@ function uuid_services_services_resources() {
             'source' => array('path' => 0),
           ),
           array(
-            'name' => 'type',
+            'name' => 'entity_type',
             'description' => 'The entity type.',
             'optional' => FALSE,
             'type' => 'text',
             'source' => 'data',
           ),
           array(
-            'name' => 'data',
+            'name' => 'entity',
             'description' => 'The entity object',
             'optional' => FALSE,
             'type' => 'struct',
