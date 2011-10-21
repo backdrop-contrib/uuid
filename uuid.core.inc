@@ -3,6 +3,10 @@
 /**
  * @file
  * Implementation of UUID hooks for all core modules.
+ *
+ * @todo
+ *   We can iterate more over entities and collect an array of ids to pass into
+ *   entity_get_uuid_by_id() to save some queries.
  */
 
 /**
@@ -145,6 +149,55 @@ function comment_entity_uuid_presave(&$entity, $entity_type) {
 
 /**
  * @} End of "Comment module implementations"
+ */
+
+/**
+ * @defgroup uuid_taxonomy Taxonomy module implementations
+ * @{
+ */
+
+/**
+ * Implements hook_entity_uuid_load().
+ */
+function taxonomy_entity_uuid_load(&$entities, $entity_type) {
+  if ($entity_type == 'taxonomy_term') {
+    foreach ($entities as $entity) {
+      // To have a true universally unique term, we unset the 'vid' property,
+      // since vocabularies have machine names. This will be mapped back in
+      // taxonomy_entity_uuid_presave() with help of the vocabulary machine
+      // name.
+      unset($entity->vid);
+      // Handle the 'parent' property.
+      if (isset($entity->parent)) {
+        if (!is_array($entity->parent)) {
+          $entity->parent = array($entity->parent);
+        }
+        $uuids = entity_get_uuid_by_id('taxonomy_term', $entity->parent);
+        $entity->parent = array_values($uuids);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_uuid_presave().
+ */
+function taxonomy_entity_uuid_presave(&$entity, $entity_type) {
+  if ($entity_type == 'taxonomy_term') {
+    if (isset($entity->parent)) {
+      if (!is_array($entity->parent)) {
+        $entity->parent = array($entity->parent);
+      }
+      $ids = entity_get_id_by_uuid('taxonomy_term', $entity->parent);
+      $entity->parent = array_values($ids);
+    }
+    $vocabulary = taxonomy_vocabulary_machine_name_load($entity->vocabulary_machine_name);
+    $entity->vid = $vocabulary->vid;
+  }
+}
+
+/**
+ * @} End of "Taxonomy module implementations"
  */
 
 /**
