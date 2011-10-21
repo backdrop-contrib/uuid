@@ -234,6 +234,15 @@ function file_entity_uuid_presave(&$entity, $entity_type) {
 }
 
 /**
+ * Implements hook_uuid_entities_features_export_render_alter().
+ */
+function file_uuid_entities_features_export_render_field_alter($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as &$item) {
+    unset($item['timestamp']);
+  }
+}
+
+/**
  * @} End of "File module implementations"
  */
 
