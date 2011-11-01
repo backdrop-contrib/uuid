@@ -270,7 +270,7 @@ function entity_uuid_save($entity_type, $entity) {
  */
 function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
   if (empty($uuids)) {
-    return FALSE;
+    return array();
   }
   $info = entity_get_info($entity_type);
   // Find out what entity keys to use.
@@ -315,6 +315,9 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
  *   IDs and UUIDs are returned instead.
  */
 function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
+  if (empty($ids)) {
+    return array();
+  }
   $info = entity_get_info($entity_type);
   // Find out what entity keys to use.
   if (!$revision) {
@@ -338,6 +341,122 @@ function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
     ->condition($id_key, array_values($ids), 'IN')
     ->execute()
     ->fetchAllKeyed();
+}
+
+/**
+ * Helper function to change entity properties from ID to UUID.
+ *
+ * We never change user UID 0 or 1 to UUIDs. Those are low level user accounts
+ * ("anonymous" and "root") that needs to be identified consistently across
+ * any system.
+ *
+ * @todo
+ *   Add tests for this function.
+ *
+ * @param $objects
+ *   An array of objects that should get $properties changed. Can be either an
+ *   entity object or a field items array.
+ * @param $entity_type
+ *   The type of entity that all $properties refers to.
+ * @param $properties
+ *   An array of properties that should be changed. All properties must refer to
+ *   the same type of entity (the one referenced in $entity_type).
+ */
+function entity_property_id_to_uuid(&$objects, $entity_type, $properties) {
+  if (!is_array($objects)) {
+    $things = array(&$objects);
+  }
+  else {
+    $things = &$objects;
+  }
+  if (!is_array($properties)) {
+    $properties = array($properties);
+  }
+  $ids = array();
+  $values = array();
+  $i = 0;
+  foreach ($things as &$object) {
+    foreach ($properties as $property) {
+      // This is probably an entity object.
+      if (is_object($object) && isset($object->{$property})) {
+        $values[$i] = &$object->{$property};
+      }
+      // This is probably a field items array.
+      elseif (is_array($object) && isset($object[$property])) {
+        $values[$i] = &$object[$property];
+      }
+      else {
+        $i++;
+        continue;
+      }
+      if (!($entity_type == 'user' && ($values[$i] == 0 || $values[$i] == 1))) {
+        $ids[] = $values[$i];
+      }
+      $i++;
+    }
+  }
+  $uuids = entity_get_uuid_by_id($entity_type, $ids);
+  foreach ($values as $i => $value) {
+    if (isset($uuids[$value])) {
+      $values[$i] = $uuids[$value];
+    }
+  }
+}
+
+/**
+ * Helper function to change entity properties from UUID to ID.
+ *
+ * @todo
+ *   Add tests for this function.
+ *
+ * @param $objects
+ *   An array of objects that should get $properties changed. Can be either an
+ *   entity object or a field items array.
+ * @param $entity_type
+ *   The type of entity that all $properties refers to.
+ * @param $properties
+ *   An array of properties that should be changed. All properties must refer to
+ *   the same type of entity (the one referenced in $entity_type).
+ */
+function entity_property_uuid_to_id(&$objects, $entity_type, $properties) {
+  if (!is_array($objects)) {
+    $things = array(&$objects);
+  }
+  else {
+    $things = &$objects;
+  }
+  if (!is_array($properties)) {
+    $properties = array($properties);
+  }
+  $uuids = array();
+  $values = array();
+  $i = 0;
+  foreach ($things as &$object) {
+    foreach ($properties as $property) {
+      // This is probably an entity object.
+      if (is_object($object) && isset($object->{$property})) {
+        $values[$i] = &$object->{$property};
+      }
+      // This is probably a field items array.
+      elseif (is_array($object) && isset($object[$property])) {
+        $values[$i] = &$object[$property];
+      }
+      else {
+        $i++;
+        continue;
+      }
+      if (uuid_is_valid($values[$i])) {
+        $uuids[] = $values[$i];
+      }
+      $i++;
+    }
+  }
+  $ids = entity_get_id_by_uuid($entity_type, $uuids);
+  foreach ($values as $i => $value) {
+    if (isset($ids[$value])) {
+      $values[$i] = $ids[$value];
+    }
+  }
 }
 
 /**
