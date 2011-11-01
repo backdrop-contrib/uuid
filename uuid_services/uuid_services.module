@@ -32,15 +32,8 @@ function uuid_services_services_resources() {
             'source' => array('path' => 0),
           ),
           array(
-            'name' => 'entity_type',
-            'description' => 'The entity type.',
-            'optional' => FALSE,
-            'type' => 'text',
-            'source' => 'data',
-          ),
-          array(
-            'name' => 'entity',
-            'description' => 'The entity object',
+            'name' => 'data',
+            'description' => 'Entity data containing entity type and the entity itself.',
             'optional' => FALSE,
             'type' => 'struct',
             'source' => 'data',
@@ -54,9 +47,9 @@ function uuid_services_services_resources() {
 /**
  * Callback for saving or updating an entity by its UUID.
  */
-function _uuid_services_entity_update($uuid, $entity_type, $entity) {
-  $entity = (object)$entity;
-  entity_uuid_save($entity_type, $entity);
+function _uuid_services_entity_update($uuid, $data) {
+  $entity = (object)$data['entity'];
+  entity_uuid_save($data['entity_type'], $entity);
   return (object)array(
     'id' => $uuid,
     'uri' => 'entity/' . $uuid,

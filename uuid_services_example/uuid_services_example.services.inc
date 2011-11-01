@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_default_services_endpoint().
+ * Implements hook_default_services_endpoint().
  */
 function uuid_services_example_default_services_endpoint() {
   $export = array();
@@ -14,10 +14,10 @@ function uuid_services_example_default_services_endpoint() {
   $endpoint->disabled = FALSE; /* Edit this to true to make a default endpoint disabled initially */
   $endpoint->api_version = 3;
   $endpoint->name = 'uuid_services_example';
-  $endpoint->title = 'UUID Services Example';
   $endpoint->server = 'rest_server';
   $endpoint->path = 'api';
   $endpoint->authentication = array();
+  $endpoint->server_settings = '';
   $endpoint->resources = array(
     'uuid_entity' => array(
       'operations' => array(
@@ -27,7 +27,7 @@ function uuid_services_example_default_services_endpoint() {
       ),
     ),
   );
-  $endpoint->debug = 0;
+  $endpoint->debug = 1;
   $export['uuid_services_example'] = $endpoint;
 
   return $export;
