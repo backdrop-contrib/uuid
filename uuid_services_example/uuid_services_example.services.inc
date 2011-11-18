@@ -16,9 +16,40 @@ function uuid_services_example_default_services_endpoint() {
   $endpoint->name = 'uuid_services_example';
   $endpoint->server = 'rest_server';
   $endpoint->path = 'api';
-  $endpoint->authentication = array();
-  $endpoint->server_settings = '';
+  $endpoint->authentication = array(
+    'services' => 'services',
+  );
+  $endpoint->server_settings = array(
+    'rest_server' => array(
+      'formatters' => array(
+        'json' => TRUE,
+        'bencode' => FALSE,
+        'jsonp' => FALSE,
+        'php' => FALSE,
+        'rss' => FALSE,
+        'xml' => FALSE,
+        'yaml' => FALSE,
+      ),
+      'parsers' => array(
+        'application/json' => TRUE,
+        'application/x-www-form-urlencoded' => TRUE,
+        'multipart/form-data' => TRUE,
+        'application/vnd.php.serialized' => FALSE,
+        'application/x-yaml' => FALSE,
+      ),
+    ),
+  );
   $endpoint->resources = array(
+    'user' => array(
+      'actions' => array(
+        'login' => array(
+          'enabled' => 1,
+        ),
+        'logout' => array(
+          'enabled' => 1,
+        ),
+      ),
+    ),
     'uuid_entity' => array(
       'operations' => array(
         'update' => array(

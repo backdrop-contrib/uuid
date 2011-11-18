@@ -10,13 +10,11 @@
 function uuid_services_example_user_default_permissions() {
   $permissions = array();
 
-  // Exported permission: use entity resource
-  $permissions['use entity resource'] = array(
-    'name' => 'use entity resource',
+  // Exported permission: update uuid entity resources
+  $permissions['update uuid entity resources'] = array(
+    'name' => 'update uuid entity resources',
     'roles' => array(
       0 => 'administrator',
-      1 => 'anonymous user',
-      2 => 'authenticated user',
     ),
     'module' => 'uuid_services',
   );
