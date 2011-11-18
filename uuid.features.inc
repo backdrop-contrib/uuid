@@ -12,7 +12,7 @@ function uuid_entities_features_export_options() {
   $options = array();
   $plans = deploy_plan_load_all(array('fetch_only' => 1));
   foreach ($plans as $plan) {
-    $options[check_plain($plan->name)] = check_plain($plan->title);
+    $options[$plan->name] = $plan->title;
   }
   return $options;
 }
@@ -20,26 +20,26 @@ function uuid_entities_features_export_options() {
 /**
  * Implements [component]_features_export().
  */
-function uuid_entities_features_export($data, &$export, $module_name) {
-  foreach ($data as $name) {
-    $export['features']['uuid_entities'][$name] = $name;
+function uuid_entities_features_export($components, &$export, $module_name) {
+  foreach ($components as $plan_name) {
+    $export['features']['uuid_entities'][$plan_name] = $plan_name;
   }
 }
 
 /**
  * Implements [component]_features_export_render().
  */
-function uuid_entities_features_export_render($module_name, $data, $export = NULL) {
+function uuid_entities_features_export_render($module_name, $components, $export = NULL) {
   $code = array();
   $code[] = '  $plans = array();';
   $code[] = '';
 
-  foreach ($data as $name) {
-    $plan = deploy_plan_load($name);
+  foreach ($components as $plan_name) {
+    $plan = deploy_plan_load($plan_name);
     $iterator = $plan->getIterator();
-    foreach ($iterator as $current) {
-      $entity_type = $current['entity_type'];
-      $entity = $current['entity'];
+    foreach ($iterator as $data) {
+      $entity_type = $data['entity_type'];
+      $entity = $data['entity'];
       if (empty($entity)) {
         continue;
       }
@@ -100,8 +100,10 @@ function uuid_entities_features_export_render($module_name, $data, $export = NUL
       uuid_entities_features_clean($entity);
 
       $code[] = '  $plans[\'' . check_plain($plan->name) . '\'][] = array(';
+      $code[] = '    \'relationship\' => ' . features_var_export($data['relationship'], '    ') . ',';
       $code[] = '    \'entity_type\' => \'' . $entity_type . '\',';
-      $code[] = '    \'entity\' => (object) ' . features_var_export($entity, '    ');
+      $code[] = '    \'entity_uuid\' => \'' . $data['entity_uuid'] . '\',';
+      $code[] = '    \'entity\' => (object) ' . features_var_export($entity, '    ') . ',';
       $code[] = '  );';
     }
   }
@@ -117,22 +119,34 @@ function uuid_entities_features_export_render($module_name, $data, $export = NUL
  * Implements [component]_features_export_rebuild().
  */
 function uuid_entities_features_rebuild($module_name) {
-  $plans = module_invoke($module_name, 'uuid_default_entities');
-  if (!empty($plans)) {
-    foreach ($plans as $name => $entities) {
-      foreach ($entities as $current) {
-        // Rebuild.
-        entity_uuid_save($current['entity_type'], $current['entity']);
-      }
-    }
-  }
+  uuid_entities_rebuild($module_name, 'rebuild');
 }
 
 /**
  * Implements [component]_features_export_revert().
  */
 function uuid_entities_features_revert($module_name) {
-  uuid_entities_features_rebuild($module_name);
+  uuid_entities_rebuild($module_name, 'revert');
+}
+
+/**
+ * Helper function to rebuild entities from a plan.
+ */
+function uuid_entities_rebuild($module_name = '', $op = 'rebuild') {
+  $plans = module_invoke($module_name, 'uuid_default_entities');
+  if (!empty($plans)) {
+    foreach ($plans as $plan_name => $entities) {
+      // Let other modules do things before default entities are created.
+      module_invoke_all("uuid_entities_pre_$op", $plan_name);
+
+      foreach ($entities as $current) {
+        entity_uuid_save($current['entity_type'], $current['entity']);
+      }
+
+      // Let other modules do things after default entities are created.
+      module_invoke_all("uuid_entities_post_$op", $plan_name);
+    }
+  }
 }
 
 /**

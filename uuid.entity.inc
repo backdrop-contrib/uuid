@@ -6,6 +6,23 @@
  */
 
 /**
+ * Constants indicating entities' high-level relationship between each other.
+ *
+ * Right now, these constants are mostly used when exporting UUID entities
+ * from a deployment plan. They belong more to Deploy module, but since exported
+ * entities might be "read" without Deploy module's exitence, they need to live
+ * here.
+ */
+define('ENTITY_RELATIONSHIP_ORIGIN', 1);
+define('ENTITY_RELATIONSHIP_DEPENDENCY', 2);
+define('ENTITY_RELATIONSHIP_BELONGING', 3);
+
+/**
+ * Entity UUID exception class.
+ */
+class UuidEntityException extends Exception {}
+
+/**
  * @defgroup uuid_entity_hooks UUID implementation of Entity API
  * @{
  */
@@ -182,8 +199,7 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
 function entity_uuid_save($entity_type, $entity) {
   // This function, and this function only, depends on the entity module.
   if (!module_exists('entity')) {
-    watchdog('uuid', 'Calling %function requires the entity module.', array('%function' => __FUNCTION__), WATCHDOG_ERROR);
-    return FALSE;
+    throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
   }
 
   $info = entity_get_info($entity_type);
@@ -191,6 +207,13 @@ function entity_uuid_save($entity_type, $entity) {
     // Get the keys for local ID and UUID.
     $id_key = $info['entity keys']['id'];
     $uuid_key = $info['entity keys']['uuid'];
+
+    // UUID entites must always provide a valid UUID when saving in order to do
+    // the correct mapping between local and global IDs.
+    if (empty($entity->{$uuid_key}) || !uuid_is_valid($entity->{$uuid_key})) {
+      throw new EntityUuidException(t('Trying to save a @type entity with empty or invalid UUID.', array('@type' => $info['label'])));
+    }
+
     // Fetch the local ID by its UUID.
     $id = reset(entity_get_id_by_uuid($entity_type, array($entity->{$uuid_key})));
     // Set the correct local ID.
@@ -219,35 +242,28 @@ function entity_uuid_save($entity_type, $entity) {
       }
     }
 
-    try {
-      // Let other modules transform UUID references to local ID references.
-      $hook = 'entity_uuid_presave';
-      foreach (module_implements($hook) as $module) {
-        $function = $module . '_' . $hook;
-        if (function_exists($function)) {
-          $function($entity, $entity_type);
-        }
+    // Let other modules transform UUID references to local ID references.
+    $hook = 'entity_uuid_presave';
+    foreach (module_implements($hook) as $module) {
+      $function = $module . '_' . $hook;
+      if (function_exists($function)) {
+        $function($entity, $entity_type);
       }
-    }
-    catch (Exception $e) {
-      throw $e;
     }
 
     // Save the entity.
     entity_save($entity_type, $entity);
 
-    try {
-      $hook = 'entity_uuid_save';
-      foreach (module_implements($hook) as $module) {
-        $function = $module . '_' . $hook;
-        if (function_exists($function)) {
-          $function($entity, $entity_type);
-        }
+    $hook = 'entity_uuid_save';
+    foreach (module_implements($hook) as $module) {
+      $function = $module . '_' . $hook;
+      if (function_exists($function)) {
+        $function($entity, $entity_type);
       }
     }
-    catch (Exception $e) {
-      throw $e;
-    }
+  }
+  else {
+    throw new UuidEntityException(t('Trying to save a @type entity, which doesn\'t support UUIDs.', array('@type' => $info['label'])));
   }
 }
 
