@@ -130,12 +130,14 @@ function field_entity_uuid_load(&$entities, $entity_type) {
 
     foreach ($instances as $field_name => $instance) {
       $field = field_info_field($field_name);
-      foreach ($entity->{$field_name} as $langcode => &$items) {
-        // Invoke 'hook_field_uuid_load'. We can't use module_invoke() since
-        // that is not passing by reference.
-        $function = $field['module'] . '_field_uuid_load';
-        if (function_exists($function)) {
-          $function($entity_type, $entity, $field, $instance, $langcode, $items);
+      if (!empty($field) && isset($entity->{$field_name})) {
+        foreach ($entity->{$field_name} as $langcode => &$items) {
+          // Invoke 'hook_field_uuid_load'. We can't use module_invoke() since
+          // that is not passing by reference.
+          $function = $field['module'] . '_field_uuid_load';
+          if (function_exists($function)) {
+            $function($entity_type, $entity, $field, $instance, $langcode, $items);
+          }
         }
       }
     }
@@ -151,12 +153,14 @@ function field_entity_uuid_presave(&$entity, $entity_type) {
 
   foreach ($instances as $field_name => $instance) {
     $field = field_info_field($field_name);
-    foreach ($entity->{$field_name} as $langcode => &$items) {
-      // Invoke 'hook_field_uuid_load'. We can't use module_invoke() since
-      // that is not passing by reference.
-      $function = $field['module'] . '_field_uuid_presave';
-      if (function_exists($function)) {
-        $function($entity_type, $entity, $field, $instance, $langcode, $items);
+    if (!empty($field) && isset($entity->{$field_name})) {
+      foreach ($entity->{$field_name} as $langcode => &$items) {
+        // Invoke 'hook_field_uuid_load'. We can't use module_invoke() since
+        // that is not passing by reference.
+        $function = $field['module'] . '_field_uuid_presave';
+        if (function_exists($function)) {
+          $function($entity_type, $entity, $field, $instance, $langcode, $items);
+        }
       }
     }
   }
