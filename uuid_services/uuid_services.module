@@ -1,13 +1,18 @@
 <?php
 
 /**
+ * UUID Services exception class.
+ */
+class UuidServicesException extends Exception {}
+
+/**
  * Implements of hook_permission().
  */
 function uuid_services_permission() {
   return array(
-    'use entity resource' => array(
-      'title' => t('Use entity resource'),
-      'description' => t('Grants access to the entity service resource.'),
+    'update uuid entity resources' => array(
+      'title' => t('Update UUID entity resources'),
+      'description' => t('Grants access to update UUID entity resources.'),
     ),
   );
 }
@@ -22,21 +27,25 @@ function uuid_services_services_resources() {
         'help' => 'Save or update an entity by its UUID',
         'callback' => '_uuid_services_entity_update',
         'access callback' => 'user_access',
-        'access arguments' => array('use entity resource'),
+        'access arguments' => array('update uuid entity resources'),
         'args' => array(
           array(
             'name' => 'uuid',
             'description' => 'The UUID of the entity.',
-            'optional' => FALSE,
             'type' => 'text',
             'source' => array('path' => 0),
           ),
           array(
-            'name' => 'data',
-            'description' => 'Entity data containing entity type and the entity itself.',
-            'optional' => FALSE,
+            'name' => 'entity_type',
+            'description' => 'The entity type.',
+            'type' => 'string',
+            'source' => array('data' => 'entity_type'),
+          ),
+          array(
+            'name' => 'entity',
+            'description' => 'The entity object.',
             'type' => 'struct',
-            'source' => 'data',
+            'source' => array('data' => 'entity'),
           ),
         ),
       ),
@@ -47,11 +56,31 @@ function uuid_services_services_resources() {
 /**
  * Callback for saving or updating an entity by its UUID.
  */
-function _uuid_services_entity_update($uuid, $data) {
-  $entity = (object)$data['entity'];
-  entity_uuid_save($data['entity_type'], $entity);
-  return (object)array(
-    'id' => $uuid,
-    'uri' => 'entity/' . $uuid,
-  );
+function _uuid_services_entity_update($uuid, $entity_type, $entity) {
+  try {
+    $entity = (object)$entity;
+    entity_uuid_save($entity_type, $entity);
+
+    $response = array(
+      'entity_type' => $entity_type,
+      'entity_uuid' => $uuid,
+    );
+    $info = entity_get_info($entity_type);
+    if (!empty($info['entity keys']['revision uuid'])) {
+      $vuuid_key = $info['entity keys']['revision uuid'];
+      if (!empty($entity->{$vuuid_key})) {
+        $response['entity_vuuid'] = $entity->{$vuuid_key};
+      }
+    }
+
+    // Only add the URI for servers that support it.
+    if ($uri = services_resource_uri(array('uuid_entity', $uuid))) {
+      $response['uri'] = $uri;
+    }
+    return $response;
+  }
+  catch (Exception $exception) {
+    watchdog_exception('uuid_entity', $exception);
+    return services_error($exception, 406, $data);
+  }
 }
