@@ -272,10 +272,10 @@ class UUIDCommentTestCase extends CommentHelperCase {
    * Test CRUD on comments with UUID functions.
    */
   function testCommentCRUD() {
-   // This is sub optimal, but due to how CommentHelperCase::setUp() is 
-   // constructed we are enforced to do this. So unfortunately this test
-   // depends on 'entity' module for now.
-   module_enable(array('uuid', 'entity'), TRUE);
+    // This is sub optimal, but due to how CommentHelperCase::setUp() is
+    // constructed we are enforced to do this. So unfortunately this test
+    // depends on 'entity' module for now.
+    module_enable(array('uuid', 'entity'), TRUE);
     $user = $this->drupalCreateUser();
     $this->drupalLogin($user);
     $node = $this->drupalCreateNode();
@@ -357,15 +357,9 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
     $this->drupalLogin($user);
 
     // Create a term by tagging a node. We'll use this node later too.
-    $langcode = LANGUAGE_NONE;
-    $edit = array();
-    $edit['title'] = $this->randomName();
-    $edit["field_tags[$langcode]"] = $this->randomName();
-    $this->drupalPost('node/add/article', $edit, t('Save'));
-
-    $node = $this->drupalGetNodeByTitle($edit['title']);
-    $term = taxonomy_term_load($node->field_tags[$langcode][0]['tid']);
-
+    $vocabulary = new stdClass;
+    $vocabulary->vid = 1;
+    $term = $this->createTerm($vocabulary);
     $this->assertUUID($term->uuid, 'Term UUID was generated.');
 
     // Test updating term.
@@ -379,10 +373,6 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
     $term_test = reset(entity_uuid_load('taxonomy_term', array($term->uuid), array(), TRUE));
     $this->assertEqual($term_test->tid, $term->tid, 'Term was correctly loaded with UUID.');
 
-    // Test the term reference field.
-    $node_test = reset(entity_uuid_load('node', array($node->uuid), array(), TRUE));
-    $this->assertEqual($node_test->field_tags[$langcode][0]['tid'], $term->uuid, "Term field key 'tid' was transformed to UUID when node was loaded with UUID.");
-
     // The following tests depends on the Entity API module.
     if (module_exists('entity')) {
       // Test entity_uuid_save() for terms.
@@ -393,18 +383,6 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
       $term_test = taxonomy_term_load($term->tid);
       $this->assertEqual($term_test->name, 'newer name', 'Saving term with UUID mapped to correct term.');
       $this->assertEqual($term_test->uuid, $term->uuid, 'Term UUID was intact after saving with UUID.');
-
-      // Test saving a node with UUID and a term UUID.
-      $vocabulary = new stdClass;
-      $vocabulary->vid = 1;
-      $term_new = $this->createTerm($vocabulary);
-      $node_test = reset(entity_uuid_load('node', array($node->uuid), array(), TRUE));
-      $node_test->nid = rand();
-      $node_test->vid = rand();
-      $node_test->field_tags[$langcode][0]['tid'] = $term_new->uuid;
-      entity_uuid_save('node', $node_test);
-      $node_test = node_load($node->nid, FALSE, TRUE);
-      $this->assertEqual($node_test->field_tags[$langcode][0]['tid'], $term_new->tid, 'New term reference was added when saving node with UUID.');
     }
   }
 }
