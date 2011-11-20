@@ -1,5 +1,5 @@
-name = UUID entity resource
-description = Service for remotely saving entities based on their UUID
+name = UUID Services
+description = Provides integration with the Services module, like exposing a UUID entity resource.
 core = 7.x
 package = Services - resources
 
