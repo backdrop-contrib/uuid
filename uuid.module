@@ -75,6 +75,22 @@ function uuid_permission() {
 }
 
 /**
+ * Helper function that returns a schema field definition for UUID fields.
+ *
+ * @see uuid_schema_alter()
+ * @see uuid_install()
+ */
+function uuid_schema_field_definition() {
+  return array(
+    'type' => 'char',
+    'length' => 36,
+    'not null' => TRUE,
+    'default' => '',
+    'description' => 'The Universally Unique Identifier.',
+  );
+}
+
+/**
  * Implements of hook_module_implements_alter().
  *
  * Moves implementation of hook_entity_info_alter() to the bottom so it is

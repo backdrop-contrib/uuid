@@ -23,6 +23,58 @@ define('ENTITY_RELATIONSHIP_BELONGING', 3);
 class UuidEntityException extends Exception {}
 
 /**
+ * Helper function that returns entity info for all supported core modules,
+ * relevant for UUID functionality.
+ *
+ * @see uuid_entity_info()
+ * @see uuid_schema_alter()
+ * @see uuid_install()
+ * @see uuid_uninstall()
+ */
+function uuid_get_core_entity_info() {
+  $info = array();
+  $info['user'] = array(
+    'base table' => 'users',
+    'entity keys' => array(
+      'uuid' => 'uuid',
+    ),
+  );
+  $info['node'] = array(
+    'base table' => 'node',
+    'revision table' => 'node_revision',
+    'entity keys' => array(
+      'uuid' => 'uuid',
+      'revision uuid' => 'vuuid',
+    ),
+  );
+  if (module_exists('comment')) {
+    $info['comment'] = array(
+      'base table' => 'comment',
+      'entity keys' => array(
+        'uuid' => 'uuid',
+      ),
+    );
+  }
+  if (module_exists('file')) {
+    $info['file'] = array(
+      'base table' => 'file_managed',
+      'entity keys' => array(
+        'uuid' => 'uuid',
+      ),
+    );
+  }
+  if (module_exists('taxonomy')) {
+    $info['taxonomy_term'] = array(
+      'base table' => 'taxonomy_term_data',
+      'entity keys' => array(
+        'uuid' => 'uuid',
+      ),
+    );
+  }
+  return $info;
+}
+
+/**
  * @defgroup uuid_entity_hooks UUID implementation of Entity API
  * @{
  */
@@ -30,25 +82,15 @@ class UuidEntityException extends Exception {}
 /**
  * Implements of hook_entity_info_alter().
  *
- * This enables UUID for all core entities.
+ * @see uuid_core_entity_info().
  */
 function uuid_entity_info_alter(&$info) {
-  $info['node']['uuid'] = TRUE;
-  $info['node']['entity keys']['uuid'] = 'uuid';
-  $info['node']['entity keys']['revision uuid'] = 'vuuid';
-  $info['user']['uuid'] = TRUE;
-  $info['user']['entity keys']['uuid'] = 'uuid';
-  if (module_exists('comment')) {
-    $info['comment']['uuid'] = TRUE;
-    $info['comment']['entity keys']['uuid'] = 'uuid';
-  }
-  if (module_exists('file')) {
-    $info['file']['uuid'] = TRUE;
-    $info['file']['entity keys']['uuid'] = 'uuid';
-  }
-  if (module_exists('taxonomy')) {
-    $info['taxonomy_term']['uuid'] = TRUE;
-    $info['taxonomy_term']['entity keys']['uuid'] = 'uuid';
+  foreach (uuid_get_core_entity_info() as $entity_type => $core_info) {
+    $info[$entity_type]['uuid'] = TRUE;
+    $info[$entity_type]['entity keys']['uuid'] = $core_info['entity keys']['uuid'];
+    if (!empty($core_info['entity keys']['revision uuid'])) {
+      $info[$entity_type]['entity keys']['revision uuid'] = $core_info['entity keys']['revision uuid'];
+    }
   }
 }
 
@@ -74,46 +116,6 @@ function uuid_entity_property_info_alter(&$info) {
           'description' => t("The revision's universally unique ID."),
           'schema field' => $entity_info['entity keys']['revision uuid'],
         );
-      }
-    }
-  }
-}
-
-/**
- * Implements of hook_entity_load().
- */
-function uuid_entity_load(&$entities, $entity_type) {
-  $info = entity_get_info($entity_type);
-  if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
-    $id_key = $info['entity keys']['id'];
-    $uuid_key = $info['entity keys']['uuid'];
-    if (!empty($info['entity keys']['revision uuid'])) {
-      $vid_key = $info['entity keys']['revision'];
-      $vuuid_key = $info['entity keys']['revision uuid'];
-    }
-    $ids = array();
-    $vids = array();
-    foreach ($entities as $entity) {
-      // Some entities sets the UUID them selfs (i.e. nodes). If the first one
-      // does have a UUID, it means the others have too. So, stop here.
-      if (isset($entity->{$uuid_key}) && !empty($entity->{$uuid_key})) {
-        return;
-      }
-      $ids[] = $entity->{$id_key};
-      if (isset($vuuid_key) && !empty($entity->{$vid_key})) {
-        $vids[] = $entity->{$vid_key};
-      }
-    }
-    $uuids = entity_get_uuid_by_id($entity_type, $ids);
-    if (!empty($vids)) {
-      $vuuids = entity_get_uuid_by_id($entity_type, $vids, TRUE);
-    }
-    foreach ($entities as &$entity) {
-      if (empty($entity->{$uuid_key})) {
-        $entity->{$uuid_key} = $uuids[$entity->{$id_key}];
-      }
-      if (isset($vuuid_key) && empty($entity->{$vuuid_key}) && !empty($entity->{$vid_key}) && !empty($vuuids[$entity->{$vid_key}])) {
-        $entity->{$vuuid_key} = $vuuids[$entity->{$vid_key}];
       }
     }
   }
