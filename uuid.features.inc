@@ -9,6 +9,9 @@
  * Implements [component]_features_export_options().
  */
 function uuid_entities_features_export_options() {
+  if (!module_exists('deploy')) {
+    return array();
+  }
   $options = array();
   $plans = deploy_plan_load_all(array('fetch_only' => 1));
   foreach ($plans as $plan) {
@@ -30,6 +33,10 @@ function uuid_entities_features_export($components, &$export, $module_name) {
  * Implements [component]_features_export_render().
  */
 function uuid_entities_features_export_render($module_name, $components, $export = NULL) {
+  if (!module_exists('deploy')) {
+    return array();
+  }
+
   $code = array();
   $code[] = '  $plans = array();';
   $code[] = '';
