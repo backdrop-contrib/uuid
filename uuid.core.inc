@@ -281,8 +281,10 @@ function entityreference_field_uuid_presave($entity_type, $entity, $field, $inst
  */
 function node_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
   if ($entity_type == 'node') {
-    foreach (array('data', 'name', 'picture', 'revision_uid') as $property) {
-      unset($entity->{$property});
+    foreach (array('data', 'name', 'picture', 'revision_uid', 'last_comment_timestamp') as $property) {
+      if (isset($entity->{$property})) {
+        unset($entity->{$property});
+      }
     }
   }
 }
