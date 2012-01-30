@@ -6,81 +6,164 @@
 class UuidServicesException extends Exception {}
 
 /**
- * Implements of hook_permission().
+ * Implements hook_services_resources_alter().
  */
-function uuid_services_permission() {
-  return array(
-    'update uuid entity resources' => array(
-      'title' => t('Update UUID entity resources'),
-      'description' => t('Grants access to update UUID entity resources.'),
-    ),
-  );
-}
+function uuid_services_services_resources_alter(&$resources, &$endpoint) {
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && isset($resources[$entity_type])) {
+      // We are working with UUID enabled entities, so the 'create' method
+      // is redundant. Doing a PUT to '<entity_type>/<uuid>' will route through
+      // the update method and create the entity if it doesn't exist.
+      unset($resources[$entity_type]['create']);
 
-/**
-  * Implements of hook_services_resources().
-  */
-function uuid_services_services_resources() {
- return array(
-    'uuid_entity' => array(
-      'update' => array(
-        'help' => 'Save or update an entity by its UUID',
-        'callback' => '_uuid_services_entity_update',
-        'access callback' => 'user_access',
-        'access arguments' => array('update uuid entity resources'),
-        'args' => array(
-          array(
-            'name' => 'uuid',
-            'description' => 'The UUID of the entity.',
-            'type' => 'text',
-            'source' => array('path' => 0),
-          ),
-          array(
-            'name' => 'entity_type',
-            'description' => 'The entity type.',
-            'type' => 'string',
-            'source' => array('data' => 'entity_type'),
-          ),
-          array(
-            'name' => 'entity',
-            'description' => 'The entity object.',
-            'type' => 'struct',
-            'source' => array('data' => 'entity'),
-          ),
+      // Alter 'retrieve' method to use UUID enabled functions and arguments.
+      $resources[$entity_type]['retrieve']['help'] = t('Retrieve %label entities based on UUID.', array('%label' => $entity_info['label']));
+      $resources[$entity_type]['retrieve']['callback'] = '_uuid_services_entity_retrieve';
+      $resources[$entity_type]['retrieve']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['retrieve']['access arguments'] = array('view');
+      $resources[$entity_type]['retrieve']['access arguments append'] = TRUE;
+      $resources[$entity_type]['retrieve']['args'] = array(
+        // This argument isn't exposed in the service, only used internally..
+        array(
+          'name' => 'entity_type',
+          'description' => t('The entity type.'),
+          'type' => 'string',
+          'default value' => $entity_type,
         ),
-      ),
-    ),
-  );
+        array(
+          'name' => 'uuid',
+          'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
+          'type' => 'text',
+          'source' => array('path' => 0),
+        ),
+      );
+
+      // Alter 'update' method to use UUID enabled functions and arguments.
+      $resources[$entity_type]['update']['help'] = t('Update or create %label entities based on UUID. The payload must be formatted according to the <a href="!url">OData protocol</a>.', array('%label' => $entity_info['label'], '!url' => 'http://www.odata.org/developers/protocols'));
+      $resources[$entity_type]['update']['callback'] = '_uuid_services_entity_update';
+      $resources[$entity_type]['update']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['update']['access arguments'] = array('update');
+      $resources[$entity_type]['update']['access arguments append'] = TRUE;
+      $resources[$entity_type]['update']['args'] = array(
+        // This argument isn't exposed in the service, only used internally..
+        array(
+          'name' => 'entity_type',
+          'description' => t('The entity type.'),
+          'type' => 'string',
+          'default value' => $entity_type,
+        ),
+        array(
+          'name' => 'entity',
+          'description' => t('The %label entity object.', array('%label' => $entity_info['label'])),
+          'type' => 'struct',
+          'source' => 'data',
+        ),
+        array(
+          'name' => 'uuid',
+          'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
+          'type' => 'text',
+          'source' => array('path' => 0),
+        ),
+      );
+
+      // Alter 'delete' method to use UUID enabled functions and arguments.
+      $resources[$entity_type]['delete']['help'] = t('Delete %label entities based on UUID.', array('%label' => $entity_info['label']));
+      $resources[$entity_type]['delete']['callback'] = '_uuid_services_entity_delete';
+      $resources[$entity_type]['delete']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['delete']['access arguments'] = array('delete');
+      $resources[$entity_type]['delete']['access arguments append'] = TRUE;
+      $resources[$entity_type]['delete']['args'] = array(
+        // This argument isn't exposed in the service, only used internally..
+        array(
+          'name' => 'entity_type',
+          'description' => t('The entity type.'),
+          'type' => 'string',
+          'default value' => $entity_type,
+        ),
+        array(
+          'name' => 'uuid',
+          'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
+          'type' => 'text',
+          'source' => array('path' => 0),
+        ),
+      );
+    }
+  }
 }
 
 /**
- * Callback for saving or updating an entity by its UUID.
+ * Callback for the 'retrieve' method.
+ *
+ * @see entity_uuid_load()
  */
-function _uuid_services_entity_update($uuid, $entity_type, $entity) {
+function _uuid_services_entity_retrieve($entity_type, $uuid) {
+  try {
+    $entity = reset(entity_uuid_load($entity_type, array($uuid)));
+    return $entity;
+  }
+  catch (Exception $exception) {
+    watchdog_exception('uuid_services', $exception);
+    return services_error($exception, 406, $uuid);
+  }
+}
+
+/**
+ * Callback for the 'update' method.
+ *
+ * @see entity_uuid_save()
+ */
+function _uuid_services_entity_update($entity_type, $entity, $uuid) {
   try {
     $entity = (object)$entity;
     entity_uuid_save($entity_type, $entity);
-
-    $response = array(
-      'entity_type' => $entity_type,
-      'entity_uuid' => $uuid,
-    );
-    $info = entity_get_info($entity_type);
-    if (!empty($info['entity keys']['revision uuid'])) {
-      $vuuid_key = $info['entity keys']['revision uuid'];
-      if (!empty($entity->{$vuuid_key})) {
-        $response['entity_vuuid'] = $entity->{$vuuid_key};
-      }
-    }
-
-    // Only add the URI for servers that support it.
-    if ($uri = services_resource_uri(array('uuid_entity', $uuid))) {
-      $response['uri'] = $uri;
-    }
-    return $response;
+    return $entity;
   }
   catch (Exception $exception) {
-    watchdog_exception('uuid_entity', $exception);
-    return services_error($exception, 406, $data);
+    watchdog_exception('uuid_services', $exception);
+    return services_error($exception, 406, $entity);
+  }
+}
+
+/**
+ * Callback for the 'delete' method.
+ *
+ * @see entity_uuid_delete()
+ */
+function _uuid_services_entity_delete($entity_type, $uuid) {
+  try {
+    $return = entity_uuid_delete($entity_type, array($uuid));
+    return $return;
+  }
+  catch (Exception $exception) {
+    watchdog_exception('uuid_services', $exception);
+    return services_error($exception, 406, $uuid);
+  }
+}
+
+/**
+ * Access callback.
+ */
+function _uuid_services_entity_access($op, $args) {
+  $entity_type = $args[0];
+  try {
+    switch ($op) {
+      case 'view':
+      case 'delete':
+        $id = reset(entity_get_id_by_uuid($entity_type, array($args[1])));
+        $entity = reset(entity_load($entity_type, array($id)));
+        break;
+
+      case 'update':
+        // TODO: The entity is in UUID form (all references etc.),
+        // so do we need to convert it to 'normal' form?
+        $entity = $args[1];
+        break;
+    }
+    $return = entity_access($op, $entity_type, $entity);
+    return $return;
+  }
+  catch (Exception $exception) {
+    watchdog_exception('uuid_services', $exception);
+    return services_error($exception, 406, $entity_type);
   }
 }

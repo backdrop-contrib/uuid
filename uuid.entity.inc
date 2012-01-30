@@ -153,7 +153,7 @@ function uuid_entity_presave($entity, $entity_type) {
  */
 
 /**
- * Load entities only containing UUID references.
+ * Load entities by their UUID, that only should containing UUID references.
  *
  * This function is mostly useful if you want to load an entity from the local
  * database that only should contain UUID references.
@@ -190,8 +190,10 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
 }
 
 /**
- * Permanently saves an entity by its UUID. This function depends on the
- * Entity API module to provide the 'entity_save()' function.
+ * Permanently saves an entity by its UUID.
+ *
+ * This function depends on the Entity API module to provide the
+ * 'entity_save()' function.
  *
  * This function is mostly useful if you want to save an entity into the local
  * database that only contains UUID references.
@@ -266,6 +268,42 @@ function entity_uuid_save($entity_type, $entity) {
   }
   else {
     throw new UuidEntityException(t('Trying to save a @type entity, which doesn\'t support UUIDs.', array('@type' => $info['label'])));
+  }
+}
+
+/**
+ * Permanently delete the given entity by its UUID.
+ *
+ * This function depends on the Entity API module to provide the
+ * 'entity_delete()' function.
+ *
+ * @see entity_delete()
+ */
+function entity_uuid_delete($entity_type, $uuid) {
+  // This function, and this function only, depends on the entity module.
+  if (!module_exists('entity')) {
+    throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
+  }
+
+  $info = entity_get_info($entity_type);
+  if (isset($info['uuid']) && $info['uuid'] == TRUE) {
+    // Fetch the local ID by its UUID.
+    $id = reset(entity_get_id_by_uuid($entity_type, array($uuid)));
+
+    // Let other modules transform UUID references to local ID references.
+    $hook = 'entity_uuid_delete';
+    foreach (module_implements($hook) as $module) {
+      $function = $module . '_' . $hook;
+      if (function_exists($function)) {
+        $function($entity, $entity_type);
+      }
+    }
+
+    // Delete the entity.
+    return entity_delete($entity_type, $id);
+  }
+  else {
+    throw new UuidEntityException(t('Trying to delete a @type entity, which doesn\'t support UUIDs.', array('@type' => $info['label'])));
   }
 }
 
