@@ -175,6 +175,15 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
     $entities[$key] = clone $entity;
   }
 
+  entity_make_entity_universal($entity_type, $entities);
+
+  return $entities;
+}
+
+/**
+ * Helper function to make an entity universal (i.e. only global references).
+ */
+function entity_make_entity_universal($entity_type, $entities) {
   // Let other modules transform local ID references to UUID references.
   if (!empty($entities)) {
     $hook = 'entity_uuid_load';
@@ -185,8 +194,6 @@ function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(),
       }
     }
   }
-
-  return $entities;
 }
 
 /**
@@ -206,6 +213,24 @@ function entity_uuid_save($entity_type, $entity) {
     throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
   }
 
+  entity_make_entity_local($entity_type, $entity);
+
+  // Save the entity.
+  entity_save($entity_type, $entity);
+
+  $hook = 'entity_uuid_save';
+  foreach (module_implements($hook) as $module) {
+    $function = $module . '_' . $hook;
+    if (function_exists($function)) {
+      $function($entity, $entity_type);
+    }
+  }
+}
+
+/**
+ * Helper function to make an entity local (i.e. only local references).
+ */
+function entity_make_entity_local($entity_type, $entity) {
   $info = entity_get_info($entity_type);
   if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
     // Get the keys for local ID and UUID.
@@ -254,20 +279,9 @@ function entity_uuid_save($entity_type, $entity) {
         $function($entity, $entity_type);
       }
     }
-
-    // Save the entity.
-    entity_save($entity_type, $entity);
-
-    $hook = 'entity_uuid_save';
-    foreach (module_implements($hook) as $module) {
-      $function = $module . '_' . $hook;
-      if (function_exists($function)) {
-        $function($entity, $entity_type);
-      }
-    }
   }
   else {
-    throw new UuidEntityException(t('Trying to save a @type entity, which doesn\'t support UUIDs.', array('@type' => $info['label'])));
+    throw new UuidEntityException(t('Trying to operate on a @type entity, which doesn\'t support UUIDs.', array('@type' => $info['label'])));
   }
 }
 
