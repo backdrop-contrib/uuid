@@ -146,6 +146,11 @@ class UUIDUserTestCase extends UUIDTestCase {
       $user_test = user_load($user->uid, TRUE);
       $this->assertEqual($user_test->name, 'new name', 'Saving user with UUID mapped to correct user.');
       $this->assertEqual($user_test->uuid, $user->uuid, 'User UUID was intact after saving with UUID.');
+
+      // Test entity_uuid_delete() for users.
+      entity_uuid_delete('user', $user->uuid);
+      $user_test = user_load($user->uid);
+      $this->assertFalse($user_test, 'Deleting user with UUID worked.');
     }
   }
 }
@@ -238,6 +243,11 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $this->assertNotEqual($node_test->vuuid, $node->vuuid, 'A new node revison UUID was generated after saving with UUID, when creating new revision.');
       $this->assertUUID($node_test->vuuid, 'New node revision UUID was valid.');
       $this->assertEqual($node_test->uid, $node->uid, "Node property 'uid' was intact after saving with UUID, when creating new revision.");
+
+      // Test entity_uuid_delete() for nodes.
+      entity_uuid_delete('node', $node->uuid);
+      $node_test = node_load($node->nid);
+      $this->assertFalse($node_test, 'Deleting node with UUID worked.');
     }
   }
 }
@@ -309,6 +319,11 @@ class UUIDCommentTestCase extends CommentHelperCase {
       $this->assertEqual($comment_test->uuid, $comment->uuid, 'Comment UUID was intact after saving with UUID.');
       $this->assertEqual($comment_test->uid, $user->uid, "Comment property 'uid' was after saving with UUID.");
       $this->assertEqual($comment_test->nid, $node->nid, "Comment property 'nid' was after saving with UUID.");
+
+      // Test entity_uuid_delete() for comments.
+      entity_uuid_delete('comment', $comment->uuid);
+      $comment_test = comment_load($comment->cid);
+      $this->assertFalse($comment_test, 'Deleting comment with UUID worked.');
     }
   }
 }
@@ -383,6 +398,11 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
       $term_test = taxonomy_term_load($term->tid);
       $this->assertEqual($term_test->name, 'newer name', 'Saving term with UUID mapped to correct term.');
       $this->assertEqual($term_test->uuid, $term->uuid, 'Term UUID was intact after saving with UUID.');
+
+      // Test entity_uuid_delete() for nodes.
+      entity_uuid_delete('taxonomy_term', $term->uuid);
+      $term_test = taxonomy_term_load($term->tid);
+      $this->assertFalse($term_test, 'Deleting term with UUID worked.');
     }
   }
 }
