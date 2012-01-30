@@ -31,35 +31,32 @@ function uuid_entities_features_export($components, &$export, $module_name) {
 
 /**
  * Implements [component]_features_export_render().
+ *
+ * Exports entities that are formatted according to the OData protocol.
+ *
+ * @see DeployIterator
+ * @see http://www.odata.org/developers/protocols
  */
 function uuid_entities_features_export_render($module_name, $components, $export = NULL) {
   if (!module_exists('deploy')) {
     return array();
   }
-
   $code = array();
-  $code[] = '  $plans = array();';
+  $code[] = '  $entities = array();';
   $code[] = '';
 
   foreach ($components as $plan_name) {
     $plan = deploy_plan_load($plan_name);
     $iterator = $plan->getIterator();
-    foreach ($iterator as $data) {
-      $entity_type = $data['entity_type'];
-      $entity = $data['entity'];
-      if (empty($entity)) {
-        continue;
-      }
+    foreach ($iterator as $entity) {
+      $entity_type = $entity->__metadata['type'];
       $entity_info = entity_get_info($entity_type);
-
-      // We need to remove the primary keys. The UUID module will take care of
-      // the UUID mappings.
+      // We need to remove entity id and revision id keys.
       $id_key = $entity_info['entity keys']['id'];
       if (isset($entity->{$id_key})) {
         unset($entity->{$id_key});
       }
       if (!empty($entity_info['entity keys']['revision'])) {
-        // Get the keys for local revison ID and revision UUID.
         $vid_key = $entity_info['entity keys']['revision'];
         if (isset($entity->{$vid_key})) {
           unset($entity->{$vid_key});
@@ -71,29 +68,24 @@ function uuid_entities_features_export_render($module_name, $components, $export
           unset($entity->{$vuuid_key});
         }
       }
-      // We need to unset some common timestamp properties, since those can
-      // change and the feature will then always be overidden. This will save
-      // some modules for needing to implement alterations for common
-      // properties.
+      // We unset some common timestamp properties, since those will change and
+      // leave the feature constantly overidden.
       $keys = array('created', 'updated', 'changed', 'revision_timestamp', 'timestamp', 'stamp', 'current');
       foreach ($keys as $key) {
         if (isset($entity->{$key})) {
           unset($entity->{$key});
         }
       }
-
+      // Let other modules alter exported entities.
       drupal_alter('uuid_entities_features_export_entity', $entity, $entity_type);
 
       list(,, $bundle_name) = entity_extract_ids($entity_type, $entity);
       $instances = field_info_instances($entity_type, $bundle_name);
-
       foreach ($instances as $field_name => $instance) {
         $field = field_info_field($field_name);
         if (!empty($entity->{$field_name})) {
           foreach ($entity->{$field_name} as $langcode => &$items) {
-            // TODO: Can we do this with drupal_alter()? Reason for this quick and
-            // mashup is because I want to keep the argument order consistent between
-            // field hooks, and still possibility to alter arguments.
+            // Let other modules alter fields on exported entities.
             $function = $field['module'] . '_uuid_entities_features_export_field_alter';
             if (function_exists($function)) {
               $function($entity_type, $entity, $field, $instance, $langcode, $items);
@@ -105,20 +97,12 @@ function uuid_entities_features_export_render($module_name, $components, $export
         }
       }
       uuid_entities_features_clean($entity);
-
-      $code[] = '  $plans[\'' . check_plain($plan->name) . '\'][] = array(';
-      $code[] = '    \'relationship\' => ' . features_var_export($data['relationship'], '    ') . ',';
-      $code[] = '    \'entity_type\' => \'' . $entity_type . '\',';
-      $code[] = '    \'entity_uuid\' => \'' . $data['entity_uuid'] . '\',';
-      $code[] = '    \'entity\' => (object) ' . features_var_export($entity, '    ') . ',';
-      $code[] = '  );';
+      $code[] = '  $entities[\'' . check_plain($plan->name) . '\'][] = (object) ' . features_var_export($entity, '  ') . ';';
     }
   }
-
   $code[] = '';
-  $code[] = '  return $plans;';
+  $code[] = '  return $entities;';
   $code = implode("\n", $code);
-
   return array('uuid_default_entities' => $code);
 }
 
@@ -140,16 +124,14 @@ function uuid_entities_features_revert($module_name) {
  * Helper function to rebuild entities from a plan.
  */
 function uuid_entities_rebuild($module_name = '', $op = 'rebuild') {
-  $plans = module_invoke($module_name, 'uuid_default_entities');
-  if (!empty($plans)) {
-    foreach ($plans as $plan_name => $entities) {
+  $entities = module_invoke($module_name, 'uuid_default_entities');
+  if (!empty($entities)) {
+    foreach ($entities as $plan_name => $entities) {
       // Let other modules do things before default entities are created.
       module_invoke_all("uuid_entities_pre_$op", $plan_name);
-
-      foreach ($entities as $current) {
-        entity_uuid_save($current['entity_type'], $current['entity']);
+      foreach ($entities as $entity) {
+        entity_uuid_save($entity->__metadata['type'], $entity);
       }
-
       // Let other modules do things after default entities are created.
       module_invoke_all("uuid_entities_post_$op", $plan_name);
     }
