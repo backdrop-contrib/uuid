@@ -100,6 +100,16 @@ function uuid_schema_field_definition() {
 }
 
 /**
+ * Implementation of hook_views_api().
+ */
+function uuid_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'uuid'),
+  );
+}
+
+/**
  * Implements of hook_module_implements_alter().
  *
  * Moves implementation of hook_entity_info_alter() to the bottom so it is
