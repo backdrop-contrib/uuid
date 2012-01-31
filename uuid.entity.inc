@@ -228,11 +228,12 @@ function entity_make_entity_local($entity_type, $entity) {
     // UUID entites must always provide a valid UUID when saving in order to do
     // the correct mapping between local and global IDs.
     if (empty($entity->{$uuid_key}) || !uuid_is_valid($entity->{$uuid_key})) {
-      throw new EntityUuidException(t('Trying to save a @type entity with empty or invalid UUID.', array('@type' => $info['label'])));
+      throw new UuidEntityException(t('Trying to save a @type entity with empty or invalid UUID.', array('@type' => $info['label'])));
     }
 
     // Fetch the local ID by its UUID.
-    $id = reset(entity_get_id_by_uuid($entity_type, array($entity->{$uuid_key})));
+    $ids = entity_get_id_by_uuid($entity_type, array($entity->{$uuid_key}));
+    $id = reset($ids);
     // Set the correct local ID.
     if (empty($id)) {
       unset($entity->{$id_key});
@@ -248,7 +249,8 @@ function entity_make_entity_local($entity_type, $entity) {
       $vid = NULL;
       // Fetch the local revision ID by its UUID.
       if (isset($entity->{$vuuid_key})) {
-        $vid = reset(entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE));
+        $vids = entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE);
+        $vid = reset($vids);
       }
       if (empty($vid)) {
         unset($entity->{$vid_key});
@@ -290,7 +292,8 @@ function entity_uuid_delete($entity_type, $uuid) {
   $info = entity_get_info($entity_type);
   if (isset($info['uuid']) && $info['uuid'] == TRUE) {
     // Fetch the local ID by its UUID.
-    $id = reset(entity_get_id_by_uuid($entity_type, array($uuid)));
+    $ids = entity_get_id_by_uuid($entity_type, array($uuid));
+    $id = reset($ids);
 
     // Let other modules transform UUID references to local ID references.
     $hook = 'entity_uuid_delete';
