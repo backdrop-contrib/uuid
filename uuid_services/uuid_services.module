@@ -99,7 +99,8 @@ function uuid_services_services_resources_alter(&$resources, &$endpoint) {
  */
 function _uuid_services_entity_retrieve($entity_type, $uuid) {
   try {
-    $entity = reset(entity_uuid_load($entity_type, array($uuid)));
+    $entities = entity_uuid_load($entity_type, array($uuid));
+    $entity = reset($entities);
     return $entity;
   }
   catch (Exception $exception) {
@@ -160,7 +161,8 @@ function _uuid_services_entity_delete($entity_type, $uuid) {
 function _uuid_services_entity_access($op, $args) {
   // Fetch the information we have to work with.
   $entity_type = $args[0];
-  $entity_id = reset(entity_get_id_by_uuid($entity_type, array($args[1])));
+  $entity_ids = entity_get_id_by_uuid($entity_type, array($args[1]));
+  $entity_id = reset($entity_ids);
   $entity = NULL;
   if (!empty($args[2])) {
     $entity = (object)$args[2];
