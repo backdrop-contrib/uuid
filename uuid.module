@@ -63,6 +63,15 @@ function uuid_menu() {
 }
 
 /**
+ * Implements of hook_ctools_plugin_directory().
+ */
+function uuid_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'ctools') {
+    return 'plugins/' . $plugin;
+  }
+}
+
+/**
  * Implements of hook_permission().
  */
 function uuid_permission() {
