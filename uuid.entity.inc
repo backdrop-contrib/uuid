@@ -89,20 +89,20 @@ function uuid_entity_info_alter(&$info) {
  * which automatically gives us token and Rules integration.
  */
 function uuid_entity_property_info_alter(&$info) {
-  foreach (entity_get_info() as $entity_type => $entity_info) {
-    if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && !empty($entity_info['entity keys']['uuid'])) {
-      $info[$entity_type]['properties'][$entity_info['entity keys']['uuid']] = array(
+  foreach (entity_get_info() as $entity_type => $info) {
+    if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
+      $info[$entity_type]['properties'][$info['entity keys']['uuid']] = array(
         'label' => t('UUID'),
         'type' => 'text',
         'description' => t('The universally unique ID.'),
-        'schema field' => $entity_info['entity keys']['uuid'],
+        'schema field' => $info['entity keys']['uuid'],
       );
-      if (!empty($entity_info['entity keys']['revision uuid'])) {
-        $info[$entity_type]['properties'][$entity_info['entity keys']['revision uuid']] = array(
+      if (!empty($info['entity keys']['revision uuid'])) {
+        $info[$entity_type]['properties'][$info['entity keys']['revision uuid']] = array(
           'label' => t('Revision UUID'),
           'type' => 'text',
           'description' => t("The revision's universally unique ID."),
-          'schema field' => $entity_info['entity keys']['revision uuid'],
+          'schema field' => $info['entity keys']['revision uuid'],
         );
       }
     }
