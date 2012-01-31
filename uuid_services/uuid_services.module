@@ -1,11 +1,6 @@
 <?php
 
 /**
- * UUID Services exception class.
- */
-class UuidServicesException extends Exception {}
-
-/**
  * Implements hook_services_resources_alter().
  *
  * Alter all resources that support UUIDs, to make use this functionality when
