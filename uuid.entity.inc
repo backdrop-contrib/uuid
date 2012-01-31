@@ -6,18 +6,6 @@
  */
 
 /**
- * Constants indicating entities' high-level relationship between each other.
- *
- * Right now, these constants are mostly used when exporting UUID entities
- * from a deployment plan. They belong more to Deploy module, but since exported
- * entities might be "read" without Deploy module's exitence, they need to live
- * here.
- */
-define('ENTITY_RELATIONSHIP_ORIGIN', 1);
-define('ENTITY_RELATIONSHIP_DEPENDENCY', 2);
-define('ENTITY_RELATIONSHIP_BELONGING', 3);
-
-/**
  * Entity UUID exception class.
  */
 class UuidEntityException extends Exception {}
