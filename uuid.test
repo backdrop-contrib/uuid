@@ -482,10 +482,52 @@ class UUIDSyncTestCase extends UUIDTestCase {
   }
 }
 
+class UUIDExportEntitiesWithDeploy extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Export UUID entities',
+      'description' => 'Test exporting UUID entities with Deploy and Features.',
+      'group' => 'UUID',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('taxonomy', 'uuid', 'entity', 'features', 'deploy', 'deploy_example');
+  }
+
+  function testExport() {
+    $test_user = $this->drupalCreateUser();
+    $test_node = $this->drupalCreateNode(array(
+      'uid' => $test_user->uid,
+    ));
+    deploy_manager_add_to_plan('deploy_example_plan', 'node', $test_node);
+    // TODO: Test the actual insert.
+    $this->assertTrue(TRUE, 'Added a node with a user dependency to be exported as a Feature module.');
+
+    // Login and recreate the example feature. The feature isn't installed. But
+    // Features can still export the code, and we can test it.
+    $web_user = $this->drupalCreateUser(array('administer features'));
+    $this->drupalLogin($web_user);
+    $code = $this->drupalPost('admin/structure/features/uuid_default_entities_example/recreate', array(), t('Download feature'));
+    $this->assertTrue($code, 'Feature module was exported.');
+
+    // Ensure that we find what we expect in the exported code.
+    $node_test1 = preg_match('/' . $test_node->title . '/', $code);
+    $node_test2 = preg_match("/'uri' => 'node\/" . $test_node->uuid . "'/", $code);
+    $this->assertTrue($node_test1, 'Node title was found in the expoted code.');
+    $this->assertTrue($node_test2, 'Node URI was found in the expoted code.');
+    $user_test1 = preg_match('/' . $test_user->name . '/', $code);
+    $user_test2 = preg_match("/'uri' => 'user\/" . $test_user->uuid . "'/", $code);
+    $this->assertTrue($user_test1, 'User was found in the expoted code.');
+    $this->assertTrue($user_test2, 'User URI was found in the expoted code.');
+  }
+}
+
 /**
  * Tests for the UUID synchronization.
  */
-class UUIDFeaturesTestCase extends UUIDTestCase {
+class UUIDImportEntitiesTestCase extends UUIDTestCase {
 
   /**
    * Representation of the UUIDs that is exported in our example feature, that
@@ -555,7 +597,7 @@ class UUIDFeaturesTestCase extends UUIDTestCase {
     $this->assertTrue(TRUE, format_string('Reverted feature: %feature', array('%feature' => $feature)));
   }
 
-  function testDefaultEntities() {
+  function testImport() {
     $term1 = $this->getEntityByUuid('taxonomy_term', $this->term1_uuid);
     $term2 = $this->getEntityByUuid('taxonomy_term', $this->term2_uuid);
     $term3 = $this->getEntityByUuid('taxonomy_term', $this->term3_uuid);
@@ -617,12 +659,12 @@ class UUIDFeaturesTestCase extends UUIDTestCase {
   }
 }
 
-class UUIDFeaturesWithDeploy extends UUIDFeaturesTestCase {
+class UUIDImportEntitiesWithDeploy extends UUIDImportEntitiesTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'UUID Features integration, with Deploy',
-      'description' => 'Tests the Features integration, with Deploy.',
+      'name' => 'Import UUID entities, with Deploy',
+      'description' => 'Test importing UUID entities with Features and Deploy.',
       'group' => 'UUID',
     );
   }
@@ -632,12 +674,12 @@ class UUIDFeaturesWithDeploy extends UUIDFeaturesTestCase {
   }
 }
 
-class UUIDFeaturesWithoutDeploy extends UUIDFeaturesTestCase {
+class UUIDImportEntitiesWithoutDeploy extends UUIDImportEntitiesTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'UUID Features integration, without Deploy',
-      'description' => 'Tests the Features integration, without Deploy.',
+      'name' => 'Import UUID entities, without Deploy',
+      'description' => 'Test importing UUID entities with Features only.',
       'group' => 'UUID',
     );
   }
