@@ -237,9 +237,11 @@ function entity_make_entity_local($entity_type, $entity) {
     // Set the correct local ID.
     if (empty($id)) {
       unset($entity->{$id_key});
+      $entity->is_new = TRUE;
     }
     else {
       $entity->{$id_key} = $id;
+      $entity->is_new = FALSE;
     }
 
     if (!empty($info['entity keys']['revision uuid'])) {
@@ -252,12 +254,19 @@ function entity_make_entity_local($entity_type, $entity) {
         $vids = entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE);
         $vid = reset($vids);
       }
-      if (empty($vid)) {
+      if (empty($vid) && isset($entity->{$vid_key})) {
         unset($entity->{$vid_key});
-        $entity->revision = TRUE;
       }
-      else {
+      elseif (!empty($vid)) {
         $entity->{$vid_key} = $vid;
+      }
+      // Nodes need this when trying to save an existing node without a vid.
+      if ($entity_type == 'node' && !isset($entity->vid) && !$entity->is_new) {
+        $entity->vid = db_select('node', 'n')
+          ->condition('n.nid', $entity->nid)
+          ->fields('n', array('vid'))
+          ->execute()
+          ->fetchField();
       }
     }
 
