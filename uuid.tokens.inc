@@ -34,9 +34,9 @@ function uuid_tokens($token_type, $tokens, $data = array(), $options = array()) 
   $replacements = array();
   if ($token_type == 'entity') {
     $info = entity_get_info($data['entity_type']);
-    if (isset($info['uuid']) && $info['uuid'] == TRUE && !empty($info['entity keys']['uuid'])) {
+    if (isset($info['uuid']) && $info['uuid'] == TRUE && isset($tokens[$info['entity keys']['uuid']]) && !empty($info['entity keys']['uuid'])) {
       $replacements[$tokens[$info['entity keys']['uuid']]] = $data['entity']->{$info['entity keys']['uuid']};
-      if (!empty($info['entity keys']['revision uuid'])) {
+      if (isset($tokens[$info['entity keys']['revision uuid']]) && !empty($info['entity keys']['revision uuid'])) {
         $replacements[$tokens[$info['entity keys']['revision uuid']]] = $data['entity']->{$info['entity keys']['revision uuid']};
       }
     }
