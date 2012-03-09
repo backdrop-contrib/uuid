@@ -38,6 +38,34 @@ function node_entity_uuid_presave(&$entity, $entity_type) {
 /**
  * Implements hook_entity_uuid_load().
  */
+function book_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
+  if ($entity_type == 'node') {
+    if (!empty($entity->book)) {
+      $entity->book['bid'] = current(entity_get_uuid_by_id($entity_type, array($entity->book['bid'])));
+      module_load_include('inc', 'uuid', 'uuid.features.menu');
+      uuid_menu_link_make_universal($entity->book, TRUE);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_uuid_presave().
+ */
+function book_entity_uuid_presave(&$entity, $entity_type) {
+  if ($entity_type == 'node') {
+    if (!empty($entity->book)) {
+      $entity->book['bid'] = current(entity_get_id_by_uuid($entity_type, array($entity->book['bid'])));
+      if (!$entity->book['bid']) {
+        $entity->book['bid'] = 'new';
+      }
+      uuid_menu_link_make_local($entity->book);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_uuid_load().
+ */
 function comment_entity_uuid_load(&$entities, $entity_type) {
   switch ($entity_type) {
     case 'node':
@@ -265,6 +293,38 @@ function entityreference_field_uuid_presave($entity_type, $entity, $field, $inst
     $info = entity_get_info($item['target_type']);
     entity_property_uuid_to_id($item, $item['target_type'], $info['entity keys']['id']);
   }
+}
+
+/**
+ * Implements hook_entity_uuid_load().
+ */
+function field_collection_entity_uuid_load(&$entities, $entity_type) {
+  if ($entity_type == 'field_collection_item') {
+    entity_property_id_to_uuid($entities, 'field_collection_item', 'value');
+  }
+}
+
+/**
+ * Implements hook_entity_uuid_presave().
+ */
+function field_collection_entity_uuid_presave(&$entity, $entity_type) {
+  if ($entity_type == 'field_collection_item') {
+    entity_property_uuid_to_id($entity, 'field_collection_item', 'value');
+  }
+}
+
+/**
+ * Implements hook_field_uuid_load().
+ */
+function field_collection_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  entity_property_id_to_uuid($items, 'field_collection_item', 'value');
+}
+
+/**
+ * Implements hook_field_uuid_presave().
+ */
+function field_collection_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  entity_property_uuid_to_id($items, 'field_collection_item', 'value');
 }
 
 /**

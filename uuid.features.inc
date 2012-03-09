@@ -117,6 +117,11 @@ function uuid_entities_features_export_render($module_name, $components, $export
         }
       }
       uuid_entities_features_clean($entity);
+
+      // Convert entities to array to avoid having them in JSON, returned from standard implementation of $entity->export().
+      if (is_object($entity) && method_exists($entity, 'export')) {
+        $entity = get_object_vars($entity);
+      }
       $code[] = '  $entities[\'' . check_plain($component) . '\'][] = (object) ' . features_var_export($entity, '  ') . ';';
     }
   }

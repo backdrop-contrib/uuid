@@ -59,6 +59,14 @@ function uuid_get_core_entity_info() {
       ),
     );
   }
+  if (module_exists('field_collection')) {
+    $info['field_collection_item'] = array(
+      'base table' => 'field_collection_item',
+      'entity keys' => array(
+        'uuid' => 'uuid',
+      ),
+    );
+  }
   return $info;
 }
 
