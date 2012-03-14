@@ -18,18 +18,19 @@ function uuid_services_services_resources_alter(&$resources, &$endpoint) {
       unset($resources[$entity_type]['create']);
 
       // Alter 'retrieve' method to use UUID enabled functions and arguments.
-      $resources[$entity_type]['retrieve']['help'] = t('Retrieve %label entities based on UUID.', array('%label' => $entity_info['label']));
-      $resources[$entity_type]['retrieve']['callback'] = '_uuid_services_entity_retrieve';
-      $resources[$entity_type]['retrieve']['access callback'] = '_uuid_services_entity_access';
-      $resources[$entity_type]['retrieve']['access arguments'] = array('view');
-      $resources[$entity_type]['retrieve']['access arguments append'] = TRUE;
-      $resources[$entity_type]['retrieve']['args'] = array(
+      $resources[$entity_type]['operations']['retrieve']['help'] = t('Retrieve %label entities based on UUID.', array('%label' => $entity_info['label']));
+      $resources[$entity_type]['operations']['retrieve']['callback'] = '_uuid_services_entity_retrieve';
+      $resources[$entity_type]['operations']['retrieve']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['operations']['retrieve']['access arguments'] = array('view');
+      $resources[$entity_type]['operations']['retrieve']['access arguments append'] = TRUE;
+      $resources[$entity_type]['operations']['retrieve']['args'] = array(
         // This argument isn't exposed in the service, only used internally..
         array(
           'name' => 'entity_type',
           'description' => t('The entity type.'),
           'type' => 'string',
           'default value' => $entity_type,
+          'optional' => TRUE,
         ),
         array(
           'name' => 'uuid',
@@ -40,18 +41,19 @@ function uuid_services_services_resources_alter(&$resources, &$endpoint) {
       );
 
       // Alter 'update' method to use UUID enabled functions and arguments.
-      $resources[$entity_type]['update']['help'] = t('Update or create %label entities based on UUID. The payload must be formatted according to the <a href="!url">OData protocol</a>.', array('%label' => $entity_info['label'], '!url' => 'http://www.odata.org/developers/protocols'));
-      $resources[$entity_type]['update']['callback'] = '_uuid_services_entity_update';
-      $resources[$entity_type]['update']['access callback'] = '_uuid_services_entity_access';
-      $resources[$entity_type]['update']['access arguments'] = array('update');
-      $resources[$entity_type]['update']['access arguments append'] = TRUE;
-      $resources[$entity_type]['update']['args'] = array(
+      $resources[$entity_type]['operations']['update']['help'] = t('Update or create %label entities based on UUID. The payload must be formatted according to the <a href="!url">OData protocol</a>.', array('%label' => $entity_info['label'], '!url' => 'http://www.odata.org/developers/protocols'));
+      $resources[$entity_type]['operations']['update']['callback'] = '_uuid_services_entity_update';
+      $resources[$entity_type]['operations']['update']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['operations']['update']['access arguments'] = array('update');
+      $resources[$entity_type]['operations']['update']['access arguments append'] = TRUE;
+      $resources[$entity_type]['operations']['update']['args'] = array(
         // This argument isn't exposed in the service, only used internally..
         array(
           'name' => 'entity_type',
           'description' => t('The entity type.'),
           'type' => 'string',
           'default value' => $entity_type,
+          'optional' => TRUE,
         ),
         array(
           'name' => 'uuid',
@@ -68,18 +70,19 @@ function uuid_services_services_resources_alter(&$resources, &$endpoint) {
       );
 
       // Alter 'delete' method to use UUID enabled functions and arguments.
-      $resources[$entity_type]['delete']['help'] = t('Delete %label entities based on UUID.', array('%label' => $entity_info['label']));
-      $resources[$entity_type]['delete']['callback'] = '_uuid_services_entity_delete';
-      $resources[$entity_type]['delete']['access callback'] = '_uuid_services_entity_access';
-      $resources[$entity_type]['delete']['access arguments'] = array('delete');
-      $resources[$entity_type]['delete']['access arguments append'] = TRUE;
-      $resources[$entity_type]['delete']['args'] = array(
+      $resources[$entity_type]['operations']['delete']['help'] = t('Delete %label entities based on UUID.', array('%label' => $entity_info['label']));
+      $resources[$entity_type]['operations']['delete']['callback'] = '_uuid_services_entity_delete';
+      $resources[$entity_type]['operations']['delete']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['operations']['delete']['access arguments'] = array('delete');
+      $resources[$entity_type]['operations']['delete']['access arguments append'] = TRUE;
+      $resources[$entity_type]['operations']['delete']['args'] = array(
         // This argument isn't exposed in the service, only used internally..
         array(
           'name' => 'entity_type',
           'description' => t('The entity type.'),
           'type' => 'string',
           'default value' => $entity_type,
+          'optional' => TRUE,
         ),
         array(
           'name' => 'uuid',
