@@ -162,19 +162,19 @@ function _uuid_services_entity_delete($entity_type, $uuid) {
  *   2. <entity> (only available if $op == 'update')
  */
 function _uuid_services_entity_access($op, $args) {
-  // Fetch the information we have to work with.
-  $entity_type = $args[0];
-  $entity_ids = entity_get_id_by_uuid($entity_type, array($args[1]));
-  $entity_id = reset($entity_ids);
-  $entity = NULL;
-  if (!empty($args[2])) {
-    $entity = (object)$args[2];
-    // We have to make the entity local (i.e. only have local references), for
-    // access functions to work on it.
-    entity_make_entity_local($entity_type, $entity);
-  }
-
   try {
+    // Fetch the information we have to work with.
+    $entity_type = $args[0];
+    $entity_ids = entity_get_id_by_uuid($entity_type, array($args[1]));
+    $entity_id = reset($entity_ids);
+    $entity = NULL;
+    if (!empty($args[2])) {
+      $entity = (object)$args[2];
+      // We have to make the entity local (i.e. only have local references), for
+      // access functions to work on it.
+      entity_make_entity_local($entity_type, $entity);
+    }
+
     // If we've been routed to the 'update' method and the entity we are
     // operating on doesn't exist yet, that should be reflected.
     if ($op == 'update' && empty($entity_id)) {
@@ -185,8 +185,14 @@ function _uuid_services_entity_access($op, $args) {
     if (($entity_type == 'taxonomy_term' || $entity_type == 'comment') && $op == 'update') {
       $op = 'edit';
     }
-    $return = entity_access($op, $entity_type, $entity);
-    return $return;
+    // The following code is taken from entity_access() with some extra logic
+    // to handle the case where an entity type is not defining an access
+    // callback. With this logic, it's important that all entity types that
+    // needs access control have an access callback defined.
+    if (($info = entity_get_info()) && isset($info[$entity_type]['access callback'])) {
+      return $info[$entity_type]['access callback']($op, $entity, NULL, $entity_type);
+    }
+    return TRUE;
   }
   catch (Exception $exception) {
     watchdog_exception('uuid_services', $exception);
