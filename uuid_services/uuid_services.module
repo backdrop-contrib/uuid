@@ -165,8 +165,8 @@ function _uuid_services_entity_access($op, $args) {
   try {
     // Fetch the information we have to work with.
     $entity_type = $args[0];
-    // Load functionities always deal with multiple entities. So does this
-    // lookup function. But in practice this will always only be one id.
+    // Load functions always deal with multiple entities. So does this lookup
+    // function. But in practice this will always only be one id.
     $entity_ids = entity_get_id_by_uuid($entity_type, array($args[1]));
     $entity = NULL;
     if (!empty($args[2])) {
