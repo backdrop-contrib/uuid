@@ -112,6 +112,7 @@ function file_entity_uuid_presave(&$entity, $entity_type) {
     entity_property_uuid_to_id($entity, 'user', 'uid');
   }
 }
+
 /**
  * Load path data to entity object for includesion in export.
  */
