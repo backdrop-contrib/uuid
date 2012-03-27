@@ -131,6 +131,7 @@ function path_entity_uuid_load($entities, $entity_type) {
     foreach ($result as $source => $alias) {
       $nid = str_replace('node/', '', $source);
       $entities[$nid]->path['alias'] = $alias;
+      $entities[$nid]->path['pathauto'] = FALSE;
     }
   }
   elseif ($entity_type == 'taxonomy_term') {
@@ -147,6 +148,7 @@ function path_entity_uuid_load($entities, $entity_type) {
     foreach ($result as $source => $alias) {
       $tid = str_replace('taxonomy/term/', '', $source);
       $entities[$tid]->path['alias'] = $alias;
+      $entities[$tid]->path['pathauto'] = FALSE;
     }
   }
 }
