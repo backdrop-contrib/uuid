@@ -321,7 +321,7 @@ function user_reference_field_uuid_presave($entity_type, $entity, $field, $insta
 function entityreference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
   // TODO: This is not really good, but as of now 'entity_property_id_to_uuid()'
   // can't handle a single $item.
-  entity_property_id_to_uuid($items, $items[0]['target_type'], 'target_id');
+  entity_property_id_to_uuid($items, $field['settings']['target_type'], 'target_id');
 }
 
 /**
@@ -330,7 +330,7 @@ function entityreference_field_uuid_load($entity_type, $entity, $field, $instanc
 function entityreference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   // TODO: This is not really good, but as of now 'entity_property_id_to_uuid()'
   // can't handle a single $item.
-  entity_property_uuid_to_id($items, $items[0]['target_type'], 'target_id');
+  entity_property_uuid_to_id($items, $field['settings']['target_type'], 'target_id');
 }
 
 /**
