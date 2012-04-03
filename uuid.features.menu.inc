@@ -156,7 +156,7 @@ function uuid_menu_links_features_rebuild_ordered($menu_links, $reset = FALSE) {
         foreach ($unordered as $key => &$link) {
           $identifier = uuid_menu_links_features_identifier($link);
           if ($identifier) {
-            $parent = (isset($link['uuid_parent_path']) && $link['uuid_parent_path']) ? $link['menu_name'] . ":" . $link['uuid_parent_path'] : '';
+            $parent = (isset($link['uuid_parent_path']) && $link['uuid_parent_path']) ? $link['uuid_menu_name'] . ":" . $link['uuid_parent_path'] : '';
             if (empty($parent)) {
               $ordered[$identifier] = 0;
               $all_links[$identifier] = $link;
@@ -241,7 +241,7 @@ function uuid_menu_link_make_universal(&$link, $prepare_for_export = FALSE) {
   }
 
   if ($prepare_for_export) {
-    foreach (array('link_path', 'mlid', 'plid') as $property) {
+    foreach (array('link_path', 'mlid', 'plid', 'nid', 'menu_name', 'href') as $property) {
       if (isset($link[$property])) {
         unset($link[$property]);
       }
