@@ -132,6 +132,9 @@ function path_entity_uuid_load($entities, $entity_type) {
       $nid = str_replace('node/', '', $source);
       $entities[$nid]->path['alias'] = $alias;
       $entities[$nid]->path['pathauto'] = FALSE;
+      unset($entities[$nid]->path['pid']);
+      unset($entities[$nid]->path['source']);
+      unset($entities[$nid]->path['language']);
     }
   }
   elseif ($entity_type == 'taxonomy_term') {
@@ -149,6 +152,9 @@ function path_entity_uuid_load($entities, $entity_type) {
       $tid = str_replace('taxonomy/term/', '', $source);
       $entities[$tid]->path['alias'] = $alias;
       $entities[$tid]->path['pathauto'] = FALSE;
+      unset($entities[$tid]->path['pid']);
+      unset($entities[$tid]->path['source']);
+      unset($entities[$tid]->path['language']);
     }
   }
 }
