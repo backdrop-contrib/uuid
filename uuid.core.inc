@@ -64,6 +64,24 @@ function book_entity_uuid_presave(&$entity, $entity_type) {
 }
 
 /**
+ * Implements hook_entity_uuid_presave().
+ */
+function user_entity_uuid_presave(&$entity, $entity_type) {
+  if ($entity_type == 'user') {
+    if (!empty($entity->picture)) {
+      $uuids = entity_get_id_by_uuid('file', array($entity->picture['uuid']));
+      $fid = current($uuids);
+      if (!$entity->is_new) {
+        $entity->picture = file_load($fid);
+      }
+      else {
+        $entity->picture = $fid;
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_entity_uuid_load().
  */
 function comment_entity_uuid_load(&$entities, $entity_type) {
