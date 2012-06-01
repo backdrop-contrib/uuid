@@ -110,6 +110,11 @@ function file_entity_uuid_load(&$entities, $entity_type) {
 function file_entity_uuid_presave(&$entity, $entity_type) {
   if ($entity_type == 'file') {
     entity_property_uuid_to_id($entity, 'user', 'uid');
+    if (isset($entity->file_contents)) {
+      $directory = drupal_dirname($entity->uri);
+      file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
+      file_unmanaged_save_data(base64_decode($entity->file_contents), $entity->uri, FILE_EXISTS_REPLACE);
+    }
   }
 }
 
