@@ -10,7 +10,7 @@
  */
 function uuid_path_entity_uuid_load(&$entities, $entity_type) {
   _uuid_path_load_url_aliases($entities, $entity_type);
-  _uuid_path_load_menu_link($entities, $entity_type);
+  _uuid_path_load_menu_links($entities, $entity_type);
 }
 
 /**
@@ -18,7 +18,7 @@ function uuid_path_entity_uuid_load(&$entities, $entity_type) {
  */
 function uuid_path_entity_uuid_save(&$entity, $entity_type) {
   _uuid_path_save_url_aliases($entity, $entity_type);
-  _uuid_path_save_menu_link($entity, $entity_type);
+  _uuid_path_save_menu_links($entity, $entity_type);
 }
 
 /**
@@ -47,21 +47,23 @@ function _uuid_path_load_url_aliases(&$entities, $entity_type) {
 }
 
 /**
- * Loads a menu link in the corresponding entity.
+ * Loads the menu links in the corresponding entity.
  */
-function _uuid_path_load_menu_link(&$entities, $entity_type) {
+function _uuid_path_load_menu_links(&$entities, $entity_type) {
+  $info = entity_get_info($entity_type);
+  // we only care about entities with URLs.
+  if (!isset($info['uri callback'])) {
+    return;
+  }
+
   module_load_include('inc', 'uuid', 'uuid.features.menu');
 
-  if ($entity_type === 'node') {
-    foreach ($entities as $id => $entity) {
-      if (isset($entity->nid)) {
-        $mlid = _uuid_path_mlid_load($entity);
-        if ($mlid) {
-          $link = menu_link_load($mlid);
-          uuid_menu_link_make_universal($link, TRUE);
-          $entities[$id]->menu_link = $link;
-        }
-      }
+  foreach ($entities as $id => $entity) {
+    $mlids = _uuid_path_mlids_load($entity, $entity_type);
+    foreach ($mlids as $mlid) {
+      $link = menu_link_load($mlid);
+      uuid_menu_link_make_universal($link, TRUE);
+      $entities[$id]->menu_links[] = $link;
     }
   }
 }
@@ -99,19 +101,22 @@ function _uuid_path_save_url_aliases(&$entity, $entity_type) {
 /**
  * Saves the received menu links.
  */
-function _uuid_path_save_menu_link(&$entity, $entity_type) {
+function _uuid_path_save_menu_links(&$entity, $entity_type) {
+  $info = entity_get_info($entity_type);
+  // we only care about entities with URLs.
+  if (!isset($info['uri callback'])) {
+    return;
+  }
+
   module_load_include('inc', 'uuid', 'uuid.features.menu');
 
-  if ($entity_type == 'node') {
-    if (isset($entity->nid)) {
-      $mlid = _uuid_path_mlid_load($entity);
-      if ($mlid) {
-        menu_link_delete($mlid);
-      }
-    }
+  $mlids = _uuid_path_mlids_load($entity, $entity_type);
+  foreach ($mlids as $mlid) {
+    menu_link_delete($mlid);
+  }
 
-    if (isset($entity->menu_link)) {
-      $link = $entity->menu_link;
+  if (isset($entity->menu_links) && is_array($entity->menu_links)) {
+    foreach ($entity->menu_links as $link) {
       uuid_menu_link_make_local($link);
       menu_link_save($link);
     }
@@ -136,31 +141,19 @@ function _uuid_path_url_alias_load($path) {
 }
 
 /**
- * Loads menu link ID associated with an entity.
+ * Loads menu link IDs associated with an entity.
  *
  * @param $entity
  *   The entity used to get the menu link ID.
  *
- * @return
- *   A menu link ID
+ * @return array
+ *   The menu link IDs
  */
-function _uuid_path_mlid_load($entity) {
-  $mlid = FALSE;
-  $menu_name = strtok(variable_get('menu_parent_' . $entity->type, 'main-menu:0'), ':');
-  // Give priority to the default menu
-  $type_menus = variable_get('menu_options_' . $entity->type, array('main-menu' => 'main-menu'));
-  if (in_array($menu_name, $type_menus)) {
-    $mlid = db_query_range("SELECT mlid FROM {menu_links} WHERE link_path = :path AND menu_name = :menu_name AND module = 'menu' ORDER BY mlid ASC", 0, 1, array(
-      ':path' => 'node/' . $entity->nid,
-      ':menu_name' => $menu_name,
-    ))->fetchField();
-  }
-  // Check all allowed menus if a link does not exist in the default menu.
-  if (!$mlid && !empty($type_menus)) {
-    $mlid = db_query_range("SELECT mlid FROM {menu_links} WHERE link_path = :path AND module = 'menu' AND menu_name IN (:type_menus) ORDER BY mlid ASC", 0, 1, array(
-      ':path' => 'node/' . $entity->nid,
-      ':type_menus' => array_values($type_menus),
-    ))->fetchField();
-  }
-  return $mlid;
+function _uuid_path_mlids_load($entity, $entity_type) {
+  $uri = entity_uri($entity_type, $entity);
+  $mlids = db_query("SELECT mlid FROM {menu_links} WHERE link_path = :path AND module = 'menu' ORDER BY mlid ASC", array(
+    ':path' => $uri['path'],
+  ))->fetchCol();
+
+  return $mlids;
 }
