@@ -6,6 +6,11 @@
  */
 
 /**
+ * Pattern for detecting a valid UUID.
+ */
+define('UUID_PATTERN', '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}');
+
+/**
  * Generates an universally unique identifier.
  *
  * This function first checks for the PECL alternative for generating
@@ -49,7 +54,7 @@ function uuid_sync_all() {
  *   TRUE if the string is well formed.
  */
 function uuid_is_valid($uuid) {
-  return preg_match("/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/", $uuid);
+  return preg_match('/^' . UUID_PATTERN . '$/', $uuid);
 }
 
 /**
