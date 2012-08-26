@@ -45,19 +45,6 @@ function uuid_sync_all() {
 }
 
 /**
- * Check that a string appears to be in the format of a UUID.
- *
- * @param $uuid
- *  The string to test.
- *
- * @return
- *   TRUE if the string is well formed.
- */
-function uuid_is_valid($uuid) {
-  return preg_match('/^' . UUID_PATTERN . '$/', $uuid);
-}
-
-/**
  * Generates a UUID using the Windows internal GUID generator.
  *
  * @see http://php.net/com_create_guid
@@ -94,4 +81,21 @@ function _uuid_generate_php() {
     // 8 bits for "clk_seq_low" 48 bits for "node".
     mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
   );
+}
+
+
+// This is wrapped in an if block to avoid conflicts with PECL's uuid_is_valid().
+/**
+ * Check that a string appears to be in the format of a UUID.
+ *
+ * @param $uuid
+ *  The string to test.
+ *
+ * @return
+ *   TRUE if the string is well formed.
+ */
+if (!function_exists('uuid_is_valid')) {
+  function uuid_is_valid($uuid) {
+    return preg_match('/^' . UUID_PATTERN . '$/', $uuid);
+  }
 }
