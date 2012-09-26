@@ -36,6 +36,22 @@ function node_entity_uuid_presave(&$entity, $entity_type) {
 }
 
 /**
+ * Implements hook_entity_uuid_save().
+ */
+function node_entity_uuid_save(&$entity, $entity_type) {
+  // When a node is translated, the source node's tnid is set to it's own nid. When deploying
+  // the node for the first time the tnid can't be translated to an nid until after the node has been saved.
+  // So if the entity's tnid is still a uuid at this point it needs to be translated to an nid.
+  if ($entity_type == 'node' && uuid_is_valid($entity->tnid)) {
+    entity_property_uuid_to_id($entity, 'node', 'tnid');
+    db_update('node')
+      ->fields(array('tnid' => $entity->tnid))
+      ->condition('nid', $entity->nid)
+      ->execute();
+  }
+}
+
+/**
  * Implements hook_entity_uuid_load().
  */
 function book_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
