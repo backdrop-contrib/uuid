@@ -116,6 +116,8 @@ function uuid_hook_info() {
     'uuid_entities_features_export_field_alter',
     'uuid_uri_data',
     'uuid_id_uri_data',
+    'uuid_uri_data',
+    'uuid_id_uri_data',
   );
 
   return array_fill_keys($hook_names, array('group' => 'uuid'));
