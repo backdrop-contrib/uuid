@@ -248,6 +248,24 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $this->assertUUID($node_test->vuuid, 'New node revision UUID was valid.');
       $this->assertEqual($node_test->uid, $node->uid, "Node property 'uid' was intact after saving with UUID, when creating new revision.");
 
+      // Reload the node again because we have created new revisions above.
+      $node = node_load($node->nid, FALSE, TRUE);
+      $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
+      $node_test = reset($nodes);
+      // Setting the node options variable should also trigger a new revision
+      // when no vid is provided.
+      variable_set('node_options_' . $node_test->type, array('revision'));
+      // Here we simulate the node coming from another environment, i.e. new
+      // vid and vuuid.
+      $rand_vid = rand();
+      $node_test->vid = $rand_vid;
+      $node_test->vuuid = uuid_generate();
+      entity_uuid_save('node', $node_test);
+      // The new local revision ID must be different from both the last
+      // revision ID and the one that was provided from the other simulated
+      // environment.
+      $this->assertTrue((($node_test->vid !== $node->vid) && ($node_test->vid !== $rand_vid)), 'A new node revison ID was generated after saving with UUID, when relying on the node options variable.');
+
       // Test entity_uuid_delete() for nodes.
       entity_uuid_delete('node', $node->uuid);
       $node_test = node_load($node->nid);

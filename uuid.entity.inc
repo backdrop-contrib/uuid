@@ -273,6 +273,10 @@ function entity_make_entity_local($entity_type, $entity) {
       $vid = NULL;
       // Fetch the local revision ID by its UUID.
       if (isset($entity->{$vuuid_key})) {
+        // It's important to note that the revision UUID might be set here but
+        // there might not exist a correspondant local revision ID in which case
+        // we should unset the assigned revision ID to not confuse anyone with
+        // revision IDs that might come from other environments.
         $vids = entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE);
         $vid = reset($vids);
       }
@@ -282,7 +286,9 @@ function entity_make_entity_local($entity_type, $entity) {
       elseif (!empty($vid)) {
         $entity->{$vid_key} = $vid;
       }
-      // Nodes need this when trying to save an existing node without a vid.
+      // If the revision ID was unset before this (or just missing for some
+      // reason) we fetch the current revision ID to build a better
+      // representation of the node object we're working with.
       if ($entity_type == 'node' && !isset($entity->vid) && !$entity->is_new) {
         // If content type has revisions enabled, set $entity->revision to 1.
         if (in_array('revision', variable_get('node_options_' . $entity->type, array()))) {
