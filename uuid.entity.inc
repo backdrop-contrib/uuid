@@ -151,12 +151,26 @@ function uuid_entity_presave($entity, $entity_type) {
 /**
  * Load entities by their UUID, that only should containing UUID references.
  *
+ * Optionally load revisions by their VUUID by passing it into $conditions.
+ * Ex. $conditions['vuuid'][$vuuid]
+ *
  * This function is mostly useful if you want to load an entity from the local
  * database that only should contain UUID references.
  *
  * @see entity_load()
  */
 function entity_uuid_load($entity_type, $uuids = array(), $conditions = array(), $reset = FALSE) {
+  // Allow Revision UUID to be passed in $conditions and translate.
+  $entity_info[$entity_type] = entity_get_info($entity_type);
+  $revision_key = $entity_info[$entity_type]['entity keys']['revision'];
+  if (isset($entity_info[$entity_type]['entity keys']['revision uuid'])) {
+    $revision_uuid_key = $entity_info[$entity_type]['entity keys']['revision uuid'];
+  }
+  if (isset($revision_uuid_key) && isset($conditions[$revision_uuid_key])) {
+    $revision_id = entity_get_id_by_uuid($entity_type, array($conditions[$revision_uuid_key]), TRUE);
+    $conditions[$revision_key] = $revision_id[$conditions[$revision_uuid_key]];
+    unset($conditions[$revision_uuid_key]);
+  }
   $ids = entity_get_id_by_uuid($entity_type, $uuids);
   $results = entity_load($entity_type, $ids, $conditions, $reset);
   $entities = array();
