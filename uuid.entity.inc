@@ -223,6 +223,16 @@ function entity_uuid_save($entity_type, $entity) {
     throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
   }
 
+  // Falling back on the variable node_options_[type] is not something an API
+  // function should take care of. With normal (non UUID) nodes this is dealt
+  // with in the form submit handler, i.e. not in node_save().
+  // But since using entity_uuid_save() usually means you're trying to manage
+  // entities remotely we do respect this variable here to make it work as the
+  // node form, but only if we explicitly haven't set $node->revision already.
+  if ($entity_type == 'node' && !isset($entity->revision) && in_array('revision', variable_get('node_options_' . $entity->type, array()))) {
+    $entity->revision = 1;
+  }
+
   entity_make_entity_local($entity_type, $entity);
 
   // Save the entity.
@@ -290,13 +300,6 @@ function entity_make_entity_local($entity_type, $entity) {
       // reason) we fetch the current revision ID to build a better
       // representation of the node object we're working with.
       if ($entity_type == 'node' && !isset($entity->vid) && !$entity->is_new) {
-        // If content type has revisions enabled, set $entity->revision to 1.
-        if (in_array('revision', variable_get('node_options_' . $entity->type, array()))) {
-          $entity->revision = 1;
-        }
-        else {
-          $entity->revision = 0;
-        }
         $entity->vid = db_select('node', 'n')
           ->condition('n.nid', $entity->nid)
           ->fields('n', array('vid'))
