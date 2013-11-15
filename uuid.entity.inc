@@ -270,7 +270,13 @@ function entity_make_entity_local($entity_type, $entity) {
       }
       // Nodes need this when trying to save an existing node without a vid.
       if ($entity_type == 'node' && !isset($entity->vid) && !$entity->is_new) {
-        $entity->revision = 0;
+        // If content type has revisions enabled, set $entity->revision to 1.
+        if (in_array('revision', variable_get('node_options_' . $entity->type, array()))) {
+          $entity->revision = 1;
+        }
+        else {
+          $entity->revision = 0;
+        }
         $entity->vid = db_select('node', 'n')
           ->condition('n.nid', $entity->nid)
           ->fields('n', array('vid'))
