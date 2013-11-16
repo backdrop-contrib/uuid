@@ -29,7 +29,7 @@ function uuid_schema_field_definition() {
 }
 
 /**
- * Implements of hook_schema_alter().
+ * Implements hook_schema_alter().
  */
 function uuid_schema_alter(&$schema = array()) {
   $field = uuid_schema_field_definition();

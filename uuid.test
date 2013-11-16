@@ -10,6 +10,9 @@
  */
 class UUIDTestCase extends DrupalWebTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   function setUp() {
     parent::setUp(func_get_args());
   }
@@ -27,6 +30,9 @@ class UUIDTestCase extends DrupalWebTestCase {
  */
 class UUIDAPITestCase extends UUIDTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'UUID API',
@@ -35,10 +41,16 @@ class UUIDAPITestCase extends UUIDTestCase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function setUp() {
     parent::setUp('uuid');
   }
 
+  /**
+   * Tests uuid function calls.
+   */
   function testAPIFunctions() {
     // This is a valid UUID, we know that.
     $valid_uuid = '0ab26e6b-f074-4e44-9da6-1205fa0e9761';
@@ -62,6 +74,9 @@ class UUIDAPITestCase extends UUIDTestCase {
  */
 class UUIDEntityTestCase extends UUIDTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'Entity API functions',
@@ -70,6 +85,9 @@ class UUIDEntityTestCase extends UUIDTestCase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function setUp() {
     parent::setUp('uuid');
   }
@@ -101,6 +119,9 @@ class UUIDEntityTestCase extends UUIDTestCase {
  */
 class UUIDUserTestCase extends UUIDTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'User implementation',
@@ -109,6 +130,9 @@ class UUIDUserTestCase extends UUIDTestCase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function setUp() {
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
@@ -161,6 +185,9 @@ class UUIDUserTestCase extends UUIDTestCase {
  */
 class UUIDNodeTestCase extends UUIDTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'Node implementation',
@@ -169,6 +196,9 @@ class UUIDNodeTestCase extends UUIDTestCase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function setUp() {
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
@@ -290,6 +320,9 @@ class UUIDNodeTestCase extends UUIDTestCase {
  */
 class UUIDCommentTestCase extends CommentHelperCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'Comment implementation',
@@ -365,6 +398,9 @@ class UUIDCommentTestCase extends CommentHelperCase {
  */
 class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'Taxonomy implementation',
@@ -374,6 +410,8 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
   }
 
   /**
+   * {@inheritdoc}
+   *
    * A lot of code here is taken from TaxonomyTermTestCase::setUp().
    */
   function setUp() {
@@ -446,6 +484,9 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
  */
 class UUIDSyncTestCase extends UUIDTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'UUID sync',
@@ -464,6 +505,9 @@ class UUIDSyncTestCase extends UUIDTestCase {
     $this->assertTrue(db_field_exists($table, $column), $message);
   }
 
+  /**
+   * Tests creating UUIDs for entities that don't have them.
+   */
   function testSync() {
     // These entities will not have UUID from the start, since the UUID module
     // isn't installed yet.

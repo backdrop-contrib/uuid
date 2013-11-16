@@ -76,9 +76,9 @@ function uuid_get_core_entity_info() {
  */
 
 /**
- * Implements of hook_entity_info_alter().
+ * Implements hook_entity_info_alter().
  *
- * @see uuid_core_entity_info().
+ * @see uuid_core_entity_info()
  */
 function uuid_entity_info_alter(&$info) {
   foreach (uuid_get_core_entity_info() as $entity_type => $core_info) {
@@ -91,7 +91,7 @@ function uuid_entity_info_alter(&$info) {
 }
 
 /**
- * Implements of hook_entity_property_info_alter().
+ * Implements hook_entity_property_info_alter().
  *
  * This adds the UUID as an entity property for all UUID-enabled entities
  * which automatically gives us token and Rules integration.
@@ -118,7 +118,7 @@ function uuid_entity_property_info_alter(&$info) {
 }
 
 /**
- * Implements of hook_entity_presave().
+ * Implements hook_entity_presave().
  *
  * This is where all UUID-enabled entities get their UUIDs.
  */
