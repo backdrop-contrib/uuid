@@ -250,21 +250,29 @@ class UUIDNodeTestCase extends UUIDTestCase {
 
       // Reload the node again because we have created new revisions above.
       $node = node_load($node->nid, FALSE, TRUE);
+      // Test the same thing again, but now triggering a new revision from a
+      // remote environment.
       $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
       $node_test = reset($nodes);
-      // Setting the node options variable should also trigger a new revision
-      // when no vid is provided.
-      variable_set('node_options_' . $node_test->type, array('revision'));
-      // Here we simulate the node coming from another environment, i.e. new
-      // vid and vuuid.
-      $rand_vid = rand();
-      $node_test->vid = $rand_vid;
-      $node_test->vuuid = uuid_generate();
+      // Simulate this node coming from a remote environment by generating
+      // IDs that won't match. Only the UUID match at this point.
+      $node_test->nid = rand();
+      $node_test->vid = rand();
+      $vuuid_test = uuid_generate();
+      $node_test->vuuid = $vuuid_test;
+      $node_test->revision = TRUE;
       entity_uuid_save('node', $node_test);
-      // The new local revision ID must be different from both the last
-      // revision ID and the one that was provided from the other simulated
-      // environment.
-      $this->assertTrue((($node_test->vid !== $node->vid) && ($node_test->vid !== $rand_vid)), 'A new node revison ID was generated after saving with UUID, when relying on the node options variable.');
+      $node_test = node_load($node->nid, FALSE, TRUE);
+      $this->assertEqual($node_test->vuuid, $vuuid_test, 'The revison UUID was preserved after saving with UUID, when creating new revision with revision UUID from remote site.');
+
+      // Reload the node again because we have created new revisions above.
+      $node = node_load($node->nid, FALSE, TRUE);
+      // Setting the node options variable should also trigger a new revision.
+      $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
+      $node_test = reset($nodes);
+      variable_set('node_options_' . $node_test->type, array('revision'));
+      entity_uuid_save('node', $node_test);
+      $this->assertNotEqual($node_test->vid, $node->vid, 'A new node revison ID was generated after saving with UUID, when relying on the node options variable.');
 
       // Test entity_uuid_delete() for nodes.
       entity_uuid_delete('node', $node->uuid);

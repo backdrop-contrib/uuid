@@ -131,7 +131,15 @@ function uuid_entity_presave($entity, $entity_type) {
     }
     if (!empty($info['entity keys']['revision uuid'])) {
       $vuuid_key = $info['entity keys']['revision uuid'];
-      if ((isset($entity->revision) && $entity->revision == TRUE) || empty($entity->{$vuuid_key})) {
+      // Find out if this revision UUID corresponds to something that exists
+      // locally. If it doesn't, it means we must preserve the revision UUID
+      // because it was provided by a remote site and expected to stay the same.
+      $vuuid_exists = FALSE;
+      if (isset($entity->{$vuuid_key})) {
+        $vuuid_exists = (bool) entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE);
+      }
+
+      if ((isset($entity->revision) && $entity->revision == TRUE && $vuuid_exists) || empty($entity->{$vuuid_key})) {
         $entity->{$vuuid_key} = uuid_generate();
       }
     }
