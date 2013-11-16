@@ -137,6 +137,12 @@ function uuid_entity_presave($entity, $entity_type) {
       $vuuid_exists = FALSE;
       if (isset($entity->{$vuuid_key})) {
         $vuuid_exists = (bool) entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE);
+        // If the provided revision UUID doesn't exist that means a new revision
+        // should be triggered.
+        // TODO: This might need a sparate test.
+        if (!$vuuid_exists) {
+          $entity->revision = TRUE;
+        }
       }
 
       if ((isset($entity->revision) && $entity->revision == TRUE && $vuuid_exists) || empty($entity->{$vuuid_key})) {
