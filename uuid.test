@@ -222,12 +222,15 @@ class UUIDNodeTestCase extends UUIDTestCase {
 
     // Test node update, without creating new revision.
     $node_test = clone $node;
-    $node_test->title = 'new title';
+    $node_test->title = 'original title';
     $node_test->revision = FALSE;
     node_save($node_test);
     $node_test = node_load($node->nid, FALSE, TRUE);
     $this->assertEqual($node_test->uuid, $node->uuid, 'Node UUID was intact after update, when not creating new revision.');
     $this->assertEqual($node_test->vuuid, $node->vuuid, 'Node revision UUID was intact after updating, when not creating new revision.');
+    // Save the original revision IDs that we will test with later.
+    $vid_old = $node_test->vid;
+    $vuuid_old = $node_test->vuuid;
 
     // Test node update, with new revision.
     $node_test = clone $node;
@@ -240,10 +243,28 @@ class UUIDNodeTestCase extends UUIDTestCase {
     $this->assertUUID($node_test->vuuid, 'The new node revision UUID was valid.');
 
     // Test entity_uuid_load().
+    // Save some variables that we will test against.
+    $nid_test = $node_test->nid;
+    $vid_test = $node_test->vid;
+    $uid_test = $user->uuid;
+    $uuid_test = $node_test->uuid;
+    $vuuid_test = $node_test->vuuid;
     $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
     $node_test = reset($nodes);
-    $this->assertEqual($node_test->nid, $node->nid, 'Node was correctly loaded with UUID.');
-    $this->assertEqual($node_test->uid, $user->uuid, "Node property 'uid' was transformed to UUID when loaded with UUID.");
+    $this->assertEqual($node_test->nid, $nid_test, 'Node ID was correct when loading with UUID.');
+    $this->assertEqual($node_test->vid, $vid_test, 'Node revision ID was correct when loading with UUID.');
+    $this->assertEqual($node_test->uid, $uid_test, "Node author ID was transformed to UUID when loaded with UUID.");
+    $this->assertEqual($node_test->uuid, $uuid_test, 'Node UUID was correct when loading with UUID.');
+    $this->assertEqual($node_test->vuuid, $vuuid_test, 'Node revision UUID was correct when loading with UUID.');
+
+    // Test entity_uuid_load() with conditions.
+    // Load the previous revision UUID that we saved earlier.
+    $nodes = entity_uuid_load('node', array($uuid_test), array('vuuid' => $vuuid_old));
+    $node_test = reset($nodes);
+    $this->assertTrue((($node_test->uuid == $uuid_test) && ($node_test->nid && $node->nid)), 'The correct entity was loaded when loading a universal entity with a revision UUID condition.');
+    $this->assertEqual($node_test->vuuid, $vuuid_old, 'Correct revision UUID was loaded when loading a universal entity with a revision UUID condition.');
+    $this->assertEqual($node_test->vid, $vid_old, 'Correct revision ID was loaded when loading a universal entity with a revision UUID condition.');
+    $this->assertEqual($node_test->title, 'original title', 'Correct title was loaded when loading a universal entity with a revision UUID condition.');
 
     // The following tests depends on the optional Entity API module.
     if (module_exists('entity')) {
