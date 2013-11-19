@@ -235,6 +235,13 @@ function entity_uuid_save($entity_type, $entity) {
     throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
   }
 
+  $info = entity_get_info($entity_type);
+  $uuid_key = $info['entity keys']['uuid'];
+  if (empty($entity->{$uuid_key}) || !uuid_is_valid($entity->{$uuid_key})) {
+    watchdog('Entity UUID', 'Attempted to save an entity with an invalid UUID', array(), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
   // Falling back on the variable node_options_[type] is not something an API
   // function should take care of. With normal (non UUID) nodes this is dealt
   // with in the form submit handler, i.e. not in node_save().
