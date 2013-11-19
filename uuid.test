@@ -323,7 +323,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $node_test = reset($nodes);
       variable_set('node_options_' . $node_test->type, array('revision'));
       entity_uuid_save('node', $node_test);
-      $this->assertNotEqual($node_test->vid, $node->vid, 'A new node revison ID was generated after saving with UUID, when relying on the node options variable.');
+      $this->assertNotEqual($node_test->vuuid, $node->vuuid, 'A new node revison ID was generated after saving with UUID, when relying on the node options variable.');
 
       // Test entity_uuid_delete() for nodes.
       entity_uuid_delete('node', $node->uuid);
