@@ -360,6 +360,7 @@ function entity_uuid_delete($entity_type, $uuid) {
     // Fetch the local ID by its UUID.
     $ids = entity_get_id_by_uuid($entity_type, array($uuid));
     $id = reset($ids);
+    $entity = entity_load($entity_type, array($id));
 
     // Let other modules transform UUID references to local ID references.
     $hook = 'entity_uuid_delete';
@@ -370,6 +371,9 @@ function entity_uuid_delete($entity_type, $uuid) {
       }
     }
 
+    if (empty($entity)) {
+      return FALSE;
+    }
     // Delete the entity.
     return entity_delete($entity_type, $id);
   }
