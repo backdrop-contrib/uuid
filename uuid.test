@@ -211,6 +211,9 @@ class UUIDNodeTestCase extends UUIDTestCase {
 
   /**
    * Tests CRUD on nodes with UUID functions.
+   *
+   * @todo
+   *   Break out into multiple test methods to loosen coupling between tests.
    */
   function testNodeCRUD() {
     // Create some entities that we will work with.
@@ -231,6 +234,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
     // Save the original revision IDs that we will test with later.
     $vid_old = $node_test->vid;
     $vuuid_old = $node_test->vuuid;
+    $uuid_old = $node_test->uuid;
 
     // Test node update, with new revision.
     $node_test = clone $node;
@@ -299,25 +303,65 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $this->assertUUID($node_test->vuuid, 'New node revision UUID was valid.');
       $this->assertEqual($node_test->uid, $node->uid, "Node property 'uid' was intact after saving with UUID, when creating new revision.");
 
-      // Reload the node again because we have created new revisions above.
-      $node = node_load($node->nid, FALSE, TRUE);
       // Test the same thing again, but now triggering a new revision from a
       // remote environment.
+      // TODO: Move this test to the uuid_services module.
       $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
       $node_test = reset($nodes);
+      // Store the current local revision ID to test with later.
+      $vid_old1 = $node_test->vid;
+      $vuuid_old1 = $node_test->vuuid;
       // Simulate this node coming from a remote environment by generating
       // IDs that won't match. Only the UUID match at this point.
-      $node_test->nid = rand();
-      $node_test->vid = rand();
+      $node_test->uuid_services = TRUE;
+      $nid_remote = rand();
+      $vid_remote = rand();
       $vuuid_test = uuid_generate();
+      $node_test->nid = $nid_test;
+      $node_test->vid = $vid_test;
       $node_test->vuuid = $vuuid_test;
       $node_test->revision = TRUE;
       entity_uuid_save('node', $node_test);
       $node_test = node_load($node->nid, FALSE, TRUE);
-      $this->assertEqual($node_test->vuuid, $vuuid_test, 'The revison UUID was preserved after saving with UUID, when creating new revision with revision UUID from remote site.');
+      $this->assertNotEqual($node_test->vid, $vid_old1, 'A new revision was created, when trying to create new revision with new revision UUID from remote site');
+      $this->assertEqual($node_test->vuuid, $vuuid_test, 'The revison UUID was preserved after saving with UUID, when trying to create new revision with new revision UUID from remote site.');
 
-      // Reload the node again because we have created new revisions above.
-      $node = node_load($node->nid, FALSE, TRUE);
+      // Test the same thing again from a remote environment, but now with the
+      // same vuuid as once previosuly. This should not trigger a new revision.
+      // This covers the case of "dupe deployments" where a client might push a
+      // node several times.
+      // TODO: Move this test to the uuid_services module.
+      $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
+      $node_test = reset($nodes);
+      // Store the current local revision ID to test with later.
+      $vid_old2 = $node_test->vid;
+      // Simulate this node coming from a remote environment by generating
+      // IDs that won't match.
+      $node_test->uuid_services = TRUE;
+      $node_test->nid = $nid_test;
+      $node_test->vid = $vid_test;
+      $node_test->vuuid = $vuuid_test;
+      $node_test->revision = TRUE;
+      entity_uuid_save('node', $node_test);
+      $node_test = node_load($node->nid, FALSE, TRUE);
+      $this->assertEqual($node_test->vid, $vid_old2, 'A new revision was not created, when trying to create new revision with existing revision UUID from remote site.');
+      $this->assertEqual($node_test->vuuid, $vuuid_test, 'The revison UUID was preserved after saving with UUID, when trying to create new revision with existing revision UUID from remote site.');
+
+      // Test the same this again, but now with an old revision.
+      $nodes = entity_uuid_load('node', array($uuid_old), array('vuuid' => $vuuid_old), TRUE);
+      $node_test = reset($nodes);
+      // Simulate this node coming from a remote environment by generating
+      // IDs that won't match.
+      $node_test->uuid_services = TRUE;
+      $node_test->nid = rand();
+      $node_test->vid = rand();
+      $node_test->revision = TRUE;
+      $node_test->title = 'newest title';
+      entity_uuid_save('node', $node_test);
+      $node_test = node_load($node->nid, $vid_old, TRUE);
+      $this->assertEqual($node_test->title, 'newest title', 'The revision was updated, when updating old revision with existing revision UUID from remote site.');
+      $this->assertEqual($node_test->vuuid, $vuuid_old, 'The revison UUID was preserved after saving with UUID, when updating old revision with existing revision UUID from remote site.');
+
       // Setting the node options variable should also trigger a new revision.
       $nodes = entity_uuid_load('node', array($node->uuid), array(), TRUE);
       $node_test = reset($nodes);

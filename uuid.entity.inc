@@ -131,21 +131,19 @@ function uuid_entity_presave($entity, $entity_type) {
     }
     if (!empty($info['entity keys']['revision uuid'])) {
       $vuuid_key = $info['entity keys']['revision uuid'];
-      // Find out if this revision UUID corresponds to something that exists
-      // locally. If it doesn't, it means we must preserve the revision UUID
-      // because it was provided by a remote site and expected to stay the same.
-      $vuuid_exists = FALSE;
-      if (isset($entity->{$vuuid_key})) {
+      // If this entity comes from a remote environment and have a revision UUID
+      // that exists locally we should not create a new revision. Because
+      // otherwise revisions won't be tracked universally.
+      // TODO: Move code dependent on the uuid_services module into it's own
+      // implementation of hook_entity_presave().
+      if (!empty($entity->uuid_services) && isset($entity->{$vuuid_key})) {
         $vuuid_exists = (bool) entity_get_id_by_uuid($entity_type, array($entity->{$vuuid_key}), TRUE);
-        // If the provided revision UUID doesn't exist that means a new revision
-        // should be triggered.
-        // TODO: This might need a sparate test.
-        if (!$vuuid_exists) {
-          $entity->revision = TRUE;
+        if ($vuuid_exists) {
+          $entity->revision = FALSE;
         }
       }
 
-      if ((isset($entity->revision) && $entity->revision == TRUE && $vuuid_exists) || empty($entity->{$vuuid_key})) {
+      if ((isset($entity->revision) && $entity->revision == TRUE && empty($entity->uuid_services)) || empty($entity->{$vuuid_key})) {
         $entity->{$vuuid_key} = uuid_generate();
       }
     }
