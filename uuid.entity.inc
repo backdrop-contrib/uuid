@@ -98,14 +98,17 @@ function uuid_entity_info_alter(&$info) {
  */
 function uuid_entity_property_info_alter(&$info) {
   foreach (entity_get_info() as $entity_type => $entity_info) {
-    if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && !empty($entity_info['entity keys']['uuid'])) {
+    if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE 
+      && !empty($entity_info['entity keys']['uuid'])
+      && empty($info[$entity_type]['properties'][$entity_info['entity keys']['uuid']])) {
       $info[$entity_type]['properties'][$entity_info['entity keys']['uuid']] = array(
         'label' => t('UUID'),
         'type' => 'text',
         'description' => t('The universally unique ID.'),
         'schema field' => $entity_info['entity keys']['uuid'],
       );
-      if (!empty($entity_info['entity keys']['revision uuid'])) {
+      if (!empty($entity_info['entity keys']['revision uuid']) 
+        && empty($info[$entity_type]['properties'][$entity_info['entity keys']['revision uuid']])) {
         $info[$entity_type]['properties'][$entity_info['entity keys']['revision uuid']] = array(
           'label' => t('Revision UUID'),
           'type' => 'text',
