@@ -258,7 +258,7 @@ function entity_uuid_save($entity_type, $entity) {
   entity_make_entity_local($entity_type, $entity);
 
   // Save the entity.
-  entity_save($entity_type, $entity);
+  $result = entity_save($entity_type, $entity);
 
   $hook = 'entity_uuid_save';
   foreach (module_implements($hook) as $module) {
@@ -267,6 +267,7 @@ function entity_uuid_save($entity_type, $entity) {
       $function($entity, $entity_type);
     }
   }
+  return $result;
 }
 
 /**
