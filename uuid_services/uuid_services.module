@@ -208,11 +208,6 @@ function _uuid_services_entity_access($op, $args) {
     if ($op == 'update' && empty($entity_ids)) {
       $op = 'create';
     }
-    // Taxonomy module uses 'edit' instead of 'update'.
-    // Oh, how I love Drupal consistency.
-    if ($entity_type == 'taxonomy_term' && $op == 'update') {
-      $op = 'edit';
-    }
     // The following code is taken from entity_access() with some extra logic
     // to handle the case where an entity type is not defining an access
     // callback. With this logic, it's important that all entity types that
