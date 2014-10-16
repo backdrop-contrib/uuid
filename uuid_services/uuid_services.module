@@ -208,6 +208,10 @@ function _uuid_services_entity_access($op, $args) {
     if ($op == 'update' && empty($entity_ids)) {
       $op = 'create';
     }
+    // If the user doesn't exist return 406 like services does.
+    if (($entity_type == 'user' && empty($entity) && $op == 'view')) {
+      return services_error(t('There is no user with UUID @uuid.', array('@uuid' => $args[1])), 406);;
+    }
     // The following code is taken from entity_access() with some extra logic
     // to handle the case where an entity type is not defining an access
     // callback. With this logic, it's important that all entity types that
