@@ -311,34 +311,7 @@ function image_field_uuid_presave($entity_type, $entity, $field, $instance, $lan
 
 /**
  * Implements hook_field_uuid_load().
- */
-function node_reference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  entity_property_id_to_uuid($items, 'node', 'nid');
-}
-
-/**
- * Implements hook_field_uuid_presave().
- */
-function node_reference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  entity_property_uuid_to_id($items, 'node', 'nid');
-}
-
-/**
- * Implements hook_field_uuid_load().
- */
-function user_reference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  entity_property_id_to_uuid($items, 'user', 'uid');
-}
-
-/**
- * Implements hook_field_uuid_presave().
- */
-function user_reference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  entity_property_uuid_to_id($items, 'user', 'uid');
-}
-
-/**
- * Implements hook_field_uuid_load().
+ * Kept here because it is in D8 core.
  */
 function entityreference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
   // TODO: This is not really good, but as of now 'entity_property_id_to_uuid()'
@@ -348,43 +321,12 @@ function entityreference_field_uuid_load($entity_type, $entity, $field, $instanc
 
 /**
  * Implements hook_field_uuid_presave().
+ * Kept here because it is in D8 core.
  */
 function entityreference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
   // TODO: This is not really good, but as of now 'entity_property_id_to_uuid()'
   // can't handle a single $item.
   entity_property_uuid_to_id($items, $field['settings']['target_type'], 'target_id');
-}
-
-/**
- * Implements hook_entity_uuid_load().
- */
-function field_collection_entity_uuid_load(&$entities, $entity_type) {
-  if ($entity_type == 'field_collection_item') {
-    entity_property_id_to_uuid($entities, 'field_collection_item', 'value');
-  }
-}
-
-/**
- * Implements hook_entity_uuid_presave().
- */
-function field_collection_entity_uuid_presave(&$entity, $entity_type) {
-  if ($entity_type == 'field_collection_item') {
-    entity_property_uuid_to_id($entity, 'field_collection_item', 'value');
-  }
-}
-
-/**
- * Implements hook_field_uuid_load().
- */
-function field_collection_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  entity_property_id_to_uuid($items, 'field_collection_item', 'value');
-}
-
-/**
- * Implements hook_field_uuid_presave().
- */
-function field_collection_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
-  entity_property_uuid_to_id($items, 'field_collection_item', 'value');
 }
 
 /**
@@ -429,17 +371,6 @@ function file_uuid_entities_features_export_field_alter($entity_type, $entity, $
   foreach ($items as &$item) {
     if (isset($item['timestamp'])) {
       unset($item['timestamp']);
-    }
-  }
-}
-
-/**
- * Implements hook_uuid_entities_features_export_entity_alter().
- */
-function workbench_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
-  foreach (array('workbench_moderation', 'my_revision', 'workbench_access', 'workbench_access_scheme', 'workbench_access_by_role') as $property) {
-    if (isset($entity->{$property})) {
-      unset($entity->{$property});
     }
   }
 }
