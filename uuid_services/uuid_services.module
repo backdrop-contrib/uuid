@@ -158,7 +158,15 @@ function _uuid_services_entity_update($entity_type, $uuid, $entity) {
  */
 function _uuid_services_entity_delete($entity_type, $uuid) {
   try {
-    $return = entity_uuid_delete($entity_type, array($uuid));
+    $uuid_exist = (bool) entity_get_id_by_uuid($entity_type, array($uuid));
+    if (!$uuid_exist) {
+      /* UUID not found. Don't try to delete something that doesn't exist. */
+      $args = array('@uuid' => $uuid, '@type' => $entity_type);
+      watchdog('uuid_services', 'UUID @uuid not found for entity type @type', $args, WATCHDOG_WARNING);
+      return TRUE;
+    }
+
+    $return = entity_uuid_delete($entity_type, array($uuid)) !== FALSE;
     return $return;
   }
   catch (Exception $exception) {
