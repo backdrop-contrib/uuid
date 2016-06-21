@@ -17,7 +17,7 @@ define('UUID_PATTERN', '[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}');
  * universally unique identifiers. If that doesn't exist, then it falls back on
  * PHP for generating that.
  *
- * @return
+ * @return string
  *   An UUID, made up of 32 hex digits and 4 hyphens.
  */
 function uuid_generate() {
@@ -53,7 +53,7 @@ function uuid_sync_all() {
  *   The type of entity being used.
  *
  * @return string
- *  The generated UUID URI or normal URI if entity doesn't support UUIDs.
+ *   The generated UUID URI or normal URI if entity doesn't support UUIDs.
  */
 function uuid_entity_uuid_uri($entity, $entity_type) {
   $entity_info = entity_get_info($entity_type);
@@ -73,13 +73,13 @@ function uuid_entity_uuid_uri($entity, $entity_type) {
 /**
  * Converts an ID URI string to an entity data array.
  *
- * @see uuid_id_uri_array_to_data()
- *
  * @param string $uri
- *  The URI to convert.
+ *   The URI to convert.
  *
  * @return array
- *  The entity data.
+ *   The entity data.
+ *
+ * @see uuid_id_uri_array_to_data()
  */
 function uuid_id_uri_to_data($uri) {
   $parts = explode('/', $uri);
@@ -90,10 +90,10 @@ function uuid_id_uri_to_data($uri) {
  * Converts a URI array to entity data array.
  *
  * @param array $uri
- *  The URI parts, often taken from arg().
+ *   The URI parts, often taken from arg().
  *
  * @return array
- *  The entity data.
+ *   The entity data.
  */
 function uuid_id_uri_array_to_data($uri) {
   $data = array(
@@ -110,13 +110,13 @@ function uuid_id_uri_array_to_data($uri) {
 /**
  * Converts a UUID URI string to an entity data array.
  *
- * @see uuid_uri_array_to_data()
- *
  * @param string $uri
- *  The URI to convert.
+ *   The URI to convert.
  *
  * @return array
- *  The entity data.
+ *   The entity data.
+ *
+ * @see uuid_uri_array_to_data()
  */
 function uuid_uri_to_data($uri, $strip_uuid = TRUE) {
   return uuid_uri_array_to_data(explode('/', $uri));
@@ -126,10 +126,10 @@ function uuid_uri_to_data($uri, $strip_uuid = TRUE) {
  * Converts a URI array to entity data array.
  *
  * @param array $uri
- *  The URI parts, often taken from arg().
+ *   The URI parts, often taken from arg().
  *
  * @return array
- *  The entity data.
+ *   The entity data.
  */
 function uuid_uri_array_to_data($uri, $strip_uuid = TRUE) {
   if ($strip_uuid) {
@@ -201,19 +201,20 @@ function _uuid_generate_php() {
   );
 }
 
-
-// This is wrapped in an if block to avoid conflicts with PECL's uuid_is_valid().
+// The if block avoids conflicts with PECL's uuid_is_valid().
 if (!function_exists('uuid_is_valid')) {
+
   /**
    * Check that a string appears to be in the format of a UUID.
    *
-   * @param $uuid
-   *  The string to test.
+   * @param string $uuid
+   *   The string to test.
    *
-   * @return
-   *   TRUE if the string is well formed.
+   * @return bool
+   *    TRUE if the string is well formed.
    */
   function uuid_is_valid($uuid) {
     return preg_match('/^' . UUID_PATTERN . '$/', $uuid);
   }
+
 }
