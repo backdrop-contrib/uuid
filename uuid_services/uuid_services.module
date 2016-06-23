@@ -6,7 +6,7 @@
 function uuid_services_menu() {
   $items['admin/config/services/uuid-services'] = array(
     'title' => 'UUID Services',
-    'description' => 'Configure settings for Module Filter.',
+    'description' => 'Configure settings for UUID Services.',
     'access arguments' => array('administer services'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('uuid_services_settings'),
