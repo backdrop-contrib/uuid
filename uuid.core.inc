@@ -83,17 +83,33 @@ function book_entity_uuid_presave(&$entity, $entity_type) {
  * Implements hook_entity_uuid_presave().
  */
 function user_entity_uuid_presave(&$entity, $entity_type) {
-  if ($entity_type == 'user') {
-    if (!empty($entity->picture)) {
-      $uuids = entity_get_id_by_uuid('file', array($entity->picture['uuid']));
-      $fid = current($uuids);
-      if (!$entity->is_new) {
-        $entity->picture = file_load($fid);
-      }
-      else {
-        $entity->picture = $fid;
-      }
-    }
+  if ($entity_type != 'user') {
+    return;
+  }
+
+  /*
+   * We need to ensure new user's passwords are encrypted. The Services module
+   * transparently encrypts the password for new users. md5() is used by
+   * users who's accounts were migrated from Drupal 6 and who haven't updated
+   * their password.
+   */
+  if (isset($entity->pass)
+    && (!('$S$D' == substr($entity->pass, 0, 4)) || preg_match('/^[a-f0-9]{32}$/', $entity->pass))) {
+    // Ensure user's password is hashed.
+    $entity->pass = user_hash_password($entity->pass);
+  }
+
+  if (empty($entity->picture)) {
+    return;
+  }
+
+  $uuids = entity_get_id_by_uuid('file', array($entity->picture['uuid']));
+  $fid = current($uuids);
+  if (!$entity->is_new) {
+    $entity->picture = file_load($fid);
+  }
+  else {
+    $entity->picture = $fid;
   }
 }
 
