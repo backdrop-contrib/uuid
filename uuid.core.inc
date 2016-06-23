@@ -39,9 +39,12 @@ function node_entity_uuid_presave(&$entity, $entity_type) {
  * Implements hook_entity_uuid_save().
  */
 function node_entity_uuid_save(&$entity, $entity_type) {
-  // When a node is translated, the source node's tnid is set to it's own nid. When deploying
-  // the node for the first time the tnid can't be translated to an nid until after the node has been saved.
-  // So if the entity's tnid is still a uuid at this point it needs to be translated to an nid.
+  /*
+   * When a node is translated, the source node's tnid is set to it's own nid.
+   * When deploying the node for the first time the tnid can't be translated
+   * to an nid until after the node has been saved. So if the entity's tnid
+   * is still a uuid at this point it needs to be translated to an nid.
+   */
   if ($entity_type == 'node' && uuid_is_valid($entity->tnid)) {
     entity_property_uuid_to_id($entity, 'node', 'tnid');
     db_update('node')
@@ -327,6 +330,7 @@ function image_field_uuid_presave($entity_type, $entity, $field, $instance, $lan
 
 /**
  * Implements hook_field_uuid_load().
+ *
  * Kept here because it is in D8 core.
  */
 function entityreference_field_uuid_load($entity_type, $entity, $field, $instance, $langcode, &$items) {
@@ -337,6 +341,7 @@ function entityreference_field_uuid_load($entity_type, $entity, $field, $instanc
 
 /**
  * Implements hook_field_uuid_presave().
+ *
  * Kept here because it is in D8 core.
  */
 function entityreference_field_uuid_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
@@ -358,24 +363,35 @@ function entityreference_field_uuid_presave($entity_type, $entity, $field, $inst
  * Implements hook_uuid_entities_features_export_entity_alter().
  */
 function node_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
-  if ($entity_type == 'node') {
-    foreach (array('data', 'name', 'picture', 'revision_uid', 'last_comment_timestamp') as $property) {
-      if (property_exists($entity, $property)) {
-        unset($entity->{$property});
-      }
+  if ($node != $entity_type) {
+    return;
+  }
+
+  $properties = array(
+    'data',
+    'name',
+    'picture',
+    'revision_uid',
+    'last_comment_timestamp',
+  );
+  foreach ($properties as $property) {
+    if (property_exists($entity, $property)) {
+      unset($entity->{$property});
     }
   }
 }
 
 /**
- * Implementations hook_uuid_entities_features_export_entity_alter().
+ * Implements hook_uuid_entities_features_export_entity_alter().
  */
 function user_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
-  if ($entity_type == 'user') {
-    foreach (array('data', 'access', 'login') as $property) {
-      if (property_exists($entity, $property)) {
-        unset($entity->{$property});
-      }
+  if ('user' != $entity_type) {
+    return;
+  }
+
+  foreach (array('data', 'access', 'login') as $property) {
+    if (property_exists($entity, $property)) {
+      unset($entity->{$property});
     }
   }
 }
