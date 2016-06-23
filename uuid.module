@@ -44,7 +44,6 @@ function uuid_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('uuid_admin_form'),
     'access arguments' => array('administer uuid'),
-    'type' => MENU_NORMAL_ITEM,
     'file' => 'uuid.admin.inc',
   );
 
