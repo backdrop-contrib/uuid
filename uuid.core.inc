@@ -32,6 +32,12 @@ function node_entity_uuid_presave(&$entity, $entity_type) {
   if ($entity_type == 'node') {
     entity_property_uuid_to_id($entity, 'user', array('uid', 'revision_uid'));
     entity_property_uuid_to_id($entity, 'node', 'tnid');
+
+    // A node always must have an author.
+    if (empty($entity->uid)) {
+      global $user;
+      $entity->uid = $user->uid;
+    }
   }
 }
 
