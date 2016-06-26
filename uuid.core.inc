@@ -159,6 +159,10 @@ function file_entity_uuid_load(&$entities, $entity_type) {
  */
 function file_entity_uuid_presave(&$entity, $entity_type) {
   if ($entity_type == 'file') {
+    // entity_make_entity_local() may have unset fid, add back if necessary
+    if (!isset($entity->fid)) {
+      $entity->fid = null;
+    }
     entity_property_uuid_to_id($entity, 'user', 'uid');
 
     // Write the new file to the local filesystem.
