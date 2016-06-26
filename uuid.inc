@@ -138,8 +138,8 @@ function uuid_uri_array_to_data($uri, $strip_uuid = TRUE) {
 
   $data = array(
     'request' => $uri,
-    'entity_type' => $uri[0],
-    'uuid' => $uri[1],
+    'entity_type' => isset($uri[0]) ? $uri[0] : NULL,
+    'uuid' => isset($uri[1]) ? $uri[1] : NULL,
   );
 
   drupal_alter('uuid_uri_data', $data);
