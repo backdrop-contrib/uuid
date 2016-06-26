@@ -139,6 +139,10 @@ function comment_entity_uuid_presave(&$entity, $entity_type) {
       break;
 
     case 'comment':
+      // entity_make_entity_local() may have unset cid, add back if necessary.
+      if (!isset($entity->cid)) {
+        $entity->cid = NULL;
+      }
       entity_property_uuid_to_id($entity, 'user', array('uid', 'u_uid'));
       entity_property_uuid_to_id($entity, 'node', 'nid');
       break;
@@ -159,9 +163,9 @@ function file_entity_uuid_load(&$entities, $entity_type) {
  */
 function file_entity_uuid_presave(&$entity, $entity_type) {
   if ($entity_type == 'file') {
-    // entity_make_entity_local() may have unset fid, add back if necessary
+    // entity_make_entity_local() may have unset fid, add back if necessary.
     if (!isset($entity->fid)) {
-      $entity->fid = null;
+      $entity->fid = NULL;
     }
     entity_property_uuid_to_id($entity, 'user', 'uid');
 
