@@ -111,19 +111,6 @@ function uuid_services_services_resources_alter(&$resources, &$endpoint) {
 }
 
 /**
- * Implements hook_entity_presave().
- */
-function uuid_services_entity_presave($entity, $type) {
-  if ($type == 'node' && $entity->is_new && $entity->uuid_services) {
-    // Set the node author if empty.
-    if (empty($entity->uid)) {
-      global $user;
-      $entity->uid = $user->uid;
-    }
-  }
-}
-
-/**
  * Callback for the 'retrieve' method.
  *
  * @see entity_uuid_load()
