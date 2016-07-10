@@ -264,7 +264,7 @@ function taxonomy_entity_uuid_presave(&$entity, $entity_type) {
  * Implements hook_entity_uuid_load().
  */
 function field_entity_uuid_load(&$entities, $entity_type) {
-  foreach ($entities as $i => $entity) {
+  foreach ($entities as $entity) {
     list(, , $bundle_name) = entity_extract_ids($entity_type, $entity);
     $instances = field_info_instances($entity_type, $bundle_name);
 
@@ -394,7 +394,7 @@ function entityreference_field_uuid_presave($entity_type, $entity, $field, $inst
  * Implements hook_uuid_entities_features_export_entity_alter().
  */
 function node_uuid_entities_features_export_entity_alter(&$entity, $entity_type) {
-  if ($node != $entity_type) {
+  if ('node' != $entity_type) {
     return;
   }
 
