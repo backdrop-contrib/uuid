@@ -70,6 +70,49 @@ class UUIDAPITestCase extends UUIDTestCase {
 }
 
 /**
+ * Tests the UUID API functions.
+ */
+class UUIDV5TestCase extends UUIDTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'UUID v5',
+      'description' => 'Tests the UUID v5 function.',
+      'group' => 'UUID',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp('uuid');
+  }
+
+  /**
+   * Tests uuid function calls.
+   */
+  public function testV5Function() {
+    // DNS namespace UUID.
+    $dns_namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+    // Valid DNS generation test.
+    $uuid = uuid_generate_v5($dns_namespace, 'drupal.org');
+    $this->assertUUID($uuid, 'UUID for drupal.org is valid.');
+    $this->assertEqual($uuid, 'c809fd30-48df-52e3-a9f2-2cd78129b8b1', 'UUID for drupal.org is correct.');
+
+    // Invalid namespace test.
+    $invalid_namespace = '01234567-c7a9-feda-27e5-75d00dabc123';
+    $uuid = uuid_generate_v5($invalid_namespace, 'drupal.org');
+    $this->assertFalse($uuid, 'Invalid namespace UUID rejected.');
+  }
+
+}
+
+/**
  * Tests the Entity API functions.
  */
 class UUIDEntityTestCase extends UUIDTestCase {
