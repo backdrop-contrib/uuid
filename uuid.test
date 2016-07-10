@@ -13,16 +13,17 @@ class UUIDTestCase extends DrupalWebTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  protected function setUp() {
     parent::setUp(func_get_args());
   }
 
   /**
    * Helper function that asserts a UUID.
    */
-  function assertUUID($uuid, $message = NULL) {
+  protected function assertUuid($uuid, $message = NULL) {
     $this->assertTrue(uuid_is_valid($uuid), $message);
   }
+
 }
 
 /**
@@ -44,14 +45,14 @@ class UUIDAPITestCase extends UUIDTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  protected function setUp() {
     parent::setUp('uuid');
   }
 
   /**
    * Tests uuid function calls.
    */
-  function testAPIFunctions() {
+  public function testApiFunctions() {
     // This is a valid UUID, we know that.
     $valid_uuid = '0ab26e6b-f074-4e44-9da6-1205fa0e9761';
     // Test the uuid_is_valid() function.
@@ -67,6 +68,50 @@ class UUIDAPITestCase extends UUIDTestCase {
     $uuid = uuid_generate();
     $this->assertUUID($uuid, 'MySQL generator works.');
   }
+
+}
+
+/**
+ * Tests the UUID API functions.
+ */
+class UUIDV5TestCase extends UUIDTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'UUID v5',
+      'description' => 'Tests the UUID v5 function.',
+      'group' => 'UUID',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp('uuid');
+  }
+
+  /**
+   * Tests uuid function calls.
+   */
+  public function testV5Function() {
+    // DNS namespace UUID.
+    $dns_namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+    // Valid DNS generation test.
+    $uuid = uuid_generate_v5($dns_namespace, 'drupal.org');
+    $this->assertUUID($uuid, 'UUID for drupal.org is valid.');
+    $this->assertEqual($uuid, 'c809fd30-48df-52e3-a9f2-2cd78129b8b1', 'UUID for drupal.org is correct.');
+
+    // Invalid namespace test.
+    $invalid_namespace = '01234567-c7a9-feda-27e5-75d00dabc123';
+    $uuid = uuid_generate_v5($invalid_namespace, 'drupal.org');
+    $this->assertFalse($uuid, 'Invalid namespace UUID rejected.');
+  }
+
 }
 
 /**
@@ -88,14 +133,14 @@ class UUIDEntityTestCase extends UUIDTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  protected function setUp() {
     parent::setUp('uuid');
   }
 
   /**
    * Tests Entity API's UUID functions.
    */
-  function testEntityAPIFunctions() {
+  public function testEntityApiFunctions() {
     // Create some entities that we will work with.
     $user = $this->drupalCreateUser();
     $node = $this->drupalCreateNode(array('title' => 'original title', 'uid' => $user->uid));
@@ -112,6 +157,7 @@ class UUIDEntityTestCase extends UUIDTestCase {
     $vuuids = entity_get_uuid_by_id('node', array($node->vid), TRUE);
     $this->assertTrue(in_array($node->vuuid, $vuuids), 'Lookup of entity revision UUID works.');
   }
+
 }
 
 /**
@@ -133,7 +179,7 @@ class UUIDUserTestCase extends UUIDTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  protected function setUp() {
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
       parent::setUp('uuid', 'entity');
@@ -146,7 +192,7 @@ class UUIDUserTestCase extends UUIDTestCase {
   /**
    * Test CRUD on users with UUID functions.
    */
-  function testUserCRUD() {
+  public function testUserCrud() {
     $user = $this->drupalCreateUser();
     $this->assertUUID($user->uuid, 'User UUID was generated.');
 
@@ -178,6 +224,7 @@ class UUIDUserTestCase extends UUIDTestCase {
       $this->assertFalse($user_test, 'Deleting user with UUID worked.');
     }
   }
+
 }
 
 /**
@@ -199,7 +246,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  protected function setUp() {
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
       parent::setUp('uuid', 'entity');
@@ -215,7 +262,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
    * @todo
    *   Break out into multiple test methods to loosen coupling between tests.
    */
-  function testNodeCRUD() {
+  public function testNodeCrud() {
     // Create some entities that we will work with.
     $user = $this->drupalCreateUser();
     $node = $this->drupalCreateNode(array('title' => 'original title', 'uid' => $user->uid));
@@ -310,12 +357,9 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $node_test = reset($nodes);
       // Store the current local revision ID to test with later.
       $vid_old1 = $node_test->vid;
-      $vuuid_old1 = $node_test->vuuid;
       // Simulate this node coming from a remote environment by generating
       // IDs that won't match. Only the UUID match at this point.
       $node_test->uuid_services = TRUE;
-      $nid_remote = rand();
-      $vid_remote = rand();
       $vuuid_test = uuid_generate();
       $node_test->nid = $nid_test;
       $node_test->vid = $vid_test;
@@ -375,6 +419,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $this->assertFalse($node_test, 'Deleting node with UUID worked.');
     }
   }
+
 }
 
 /**
@@ -402,14 +447,14 @@ class UUIDCommentTestCase extends CommentHelperCase {
    * We have duplicated this function from UUIDTestCase since we have to extend
    * CommentHelperCase instead.
    */
-  function assertUUID($uuid, $message = NULL) {
+  protected function assertUuid($uuid, $message = NULL) {
     $this->assertTrue(uuid_is_valid($uuid), $message);
   }
 
   /**
    * Test CRUD on comments with UUID functions.
    */
-  function testCommentCRUD() {
+  public function testCommentCrud() {
     // This is sub optimal, but due to how CommentHelperCase::setUp() is
     // constructed we are enforced to do this. So unfortunately this test
     // depends on 'entity' module for now.
@@ -456,6 +501,7 @@ class UUIDCommentTestCase extends CommentHelperCase {
       $this->assertFalse($comment_test, 'Deleting comment with UUID worked.');
     }
   }
+
 }
 
 /**
@@ -479,7 +525,7 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
    *
    * A lot of code here is taken from TaxonomyTermTestCase::setUp().
    */
-  function setUp() {
+  protected function setUp() {
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
       parent::setUp('taxonomy', 'uuid', 'entity');
@@ -495,19 +541,24 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
    * We have duplicated this function from UUIDTestCase since we have to extend
    * TaxonomyWebTestCase instead.
    */
-  function assertUUID($uuid, $message = NULL) {
+  protected function assertUuid($uuid, $message = NULL) {
     $this->assertTrue(uuid_is_valid($uuid), $message);
   }
 
   /**
    * Test CRUD on comments with UUID functions.
    */
-  function testTaxonomyCRUD() {
-    $user = $this->drupalCreateUser(array('administer taxonomy', 'administer nodes', 'bypass node access'));
+  public function testTaxonomyCrud() {
+    $perms = array(
+      'administer taxonomy',
+      'administer nodes',
+      'bypass node access',
+    );
+    $user = $this->drupalCreateUser($perms);
     $this->drupalLogin($user);
 
     // Create a term by tagging a node. We'll use this node later too.
-    $vocabulary = new stdClass;
+    $vocabulary = new stdClass();
     $vocabulary->vid = 1;
     $term = $this->createTerm($vocabulary);
     $this->assertUUID($term->uuid, 'Term UUID was generated.');
@@ -542,6 +593,7 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
       $this->assertFalse($term_test, 'Deleting term with UUID worked.');
     }
   }
+
 }
 
 /**
@@ -566,14 +618,14 @@ class UUIDSyncTestCase extends UUIDTestCase {
    * @todo
    *   There are something weird around this assertion.
    */
-  function assertTableColumn($table, $column, $message) {
+  protected function assertTableColumn($table, $column, $message) {
     $this->assertTrue(db_field_exists($table, $column), $message);
   }
 
   /**
    * Tests creating UUIDs for entities that don't have them.
    */
-  function testSync() {
+  public function testSync() {
     // These entities will not have UUID from the start, since the UUID module
     // isn't installed yet.
     $user = $this->drupalCreateUser();
@@ -607,4 +659,5 @@ class UUIDSyncTestCase extends UUIDTestCase {
     $user_test = user_load($user->uid, TRUE);
     $this->assertUUID($user_test->uuid, 'User UUID was generated when clicking the sync button.');
   }
+
 }
