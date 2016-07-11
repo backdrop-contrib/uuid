@@ -6,9 +6,11 @@
  */
 
 /**
- * Base class with some helper methods.
+ * UUID test helper trait.
+ *
+ * Contains methods that assist with running UUID tests.
  */
-abstract class UUIDTestCase extends DrupalWebTestCase {
+trait UUIDTestHelper {
 
   /**
    * Helper function that asserts a UUID.
@@ -16,6 +18,15 @@ abstract class UUIDTestCase extends DrupalWebTestCase {
   protected function assertUuid($uuid, $message = NULL) {
     $this->assertTrue(uuid_is_valid($uuid), $message);
   }
+
+}
+
+/**
+ * Base class with some helper methods.
+ */
+abstract class UUIDTestCase extends DrupalWebTestCase {
+
+  use UUIDTestHelper;
 
 }
 
@@ -425,6 +436,8 @@ class UUIDNodeTestCase extends UUIDTestCase {
  */
 class UUIDCommentTestCase extends CommentHelperCase {
 
+  use UUIDTestHelper;
+
   /**
    * {@inheritdoc}
    */
@@ -434,16 +447,6 @@ class UUIDCommentTestCase extends CommentHelperCase {
       'description' => 'Tests the Comment implementation.',
       'group' => 'UUID',
     );
-  }
-
-  /**
-   * Helper function that asserts a UUID.
-   *
-   * We have duplicated this function from UUIDTestCase since we have to extend
-   * CommentHelperCase instead.
-   */
-  protected function assertUuid($uuid, $message = NULL) {
-    $this->assertTrue(uuid_is_valid($uuid), $message);
   }
 
   /**
@@ -504,6 +507,8 @@ class UUIDCommentTestCase extends CommentHelperCase {
  */
 class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
 
+  use UUIDTestHelper;
+
   /**
    * {@inheritdoc}
    */
@@ -529,16 +534,6 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
     }
 
     parent::setUp($modules);
-  }
-
-  /**
-   * Helper function that asserts a UUID.
-   *
-   * We have duplicated this function from UUIDTestCase since we have to extend
-   * TaxonomyWebTestCase instead.
-   */
-  protected function assertUuid($uuid, $message = NULL) {
-    $this->assertTrue(uuid_is_valid($uuid), $message);
   }
 
   /**
