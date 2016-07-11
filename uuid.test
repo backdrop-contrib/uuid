@@ -8,14 +8,7 @@
 /**
  * Base class with some helper methods.
  */
-class UUIDTestCase extends DrupalWebTestCase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp(func_get_args());
-  }
+abstract class UUIDTestCase extends DrupalWebTestCase {
 
   /**
    * Helper function that asserts a UUID.
@@ -46,7 +39,7 @@ class UUIDAPITestCase extends UUIDTestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    parent::setUp('uuid');
+    parent::setUp(array('uuid'));
   }
 
   /**
@@ -56,17 +49,17 @@ class UUIDAPITestCase extends UUIDTestCase {
     // This is a valid UUID, we know that.
     $valid_uuid = '0ab26e6b-f074-4e44-9da6-1205fa0e9761';
     // Test the uuid_is_valid() function.
-    $this->assertUUID($valid_uuid, 'UUID validation works.');
+    $this->assertUuid($valid_uuid, 'UUID validation works.');
 
     // The default generator is 'php'.
     $uuid = uuid_generate();
-    $this->assertUUID($uuid, 'PHP generator works.');
+    $this->assertUuid($uuid, 'PHP generator works.');
 
     // Test the 'mysql' generator.
     variable_set('uuid_generator', 'mysql');
     drupal_static_reset('uuid_generate');
     $uuid = uuid_generate();
-    $this->assertUUID($uuid, 'MySQL generator works.');
+    $this->assertUuid($uuid, 'MySQL generator works.');
   }
 
 }
@@ -91,7 +84,7 @@ class UUIDV5TestCase extends UUIDTestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    parent::setUp('uuid');
+    parent::setUp(array('uuid'));
   }
 
   /**
@@ -103,7 +96,7 @@ class UUIDV5TestCase extends UUIDTestCase {
 
     // Valid DNS generation test.
     $uuid = uuid_generate_v5($dns_namespace, 'drupal.org');
-    $this->assertUUID($uuid, 'UUID for drupal.org is valid.');
+    $this->assertUuid($uuid, 'UUID for drupal.org is valid.');
     $this->assertEqual($uuid, 'c809fd30-48df-52e3-a9f2-2cd78129b8b1', 'UUID for drupal.org is correct.');
 
     // Invalid namespace test.
@@ -134,7 +127,7 @@ class UUIDEntityTestCase extends UUIDTestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    parent::setUp('uuid');
+    parent::setUp(array('uuid'));
   }
 
   /**
@@ -180,13 +173,14 @@ class UUIDUserTestCase extends UUIDTestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
+    $modules = array('uuid');
+
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
-      parent::setUp('uuid', 'entity');
+      $modules[] = 'entity';
     }
-    else {
-      parent::setUp('uuid');
-    }
+
+    parent::setUp($modules);
   }
 
   /**
@@ -194,7 +188,7 @@ class UUIDUserTestCase extends UUIDTestCase {
    */
   public function testUserCrud() {
     $user = $this->drupalCreateUser();
-    $this->assertUUID($user->uuid, 'User UUID was generated.');
+    $this->assertUuid($user->uuid, 'User UUID was generated.');
 
     // Test updating user.
     $user_test = clone $user;
@@ -247,13 +241,14 @@ class UUIDNodeTestCase extends UUIDTestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
+    $modules = array('uuid');
+
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
-      parent::setUp('uuid', 'entity');
+      $modules[] = 'entity';
     }
-    else {
-      parent::setUp('uuid');
-    }
+
+    parent::setUp($modules);
   }
 
   /**
@@ -267,8 +262,8 @@ class UUIDNodeTestCase extends UUIDTestCase {
     $user = $this->drupalCreateUser();
     $node = $this->drupalCreateNode(array('title' => 'original title', 'uid' => $user->uid));
 
-    $this->assertUUID($node->uuid, 'Node UUID was generated.');
-    $this->assertUUID($node->vuuid, 'Node revision UUID was generated.');
+    $this->assertUuid($node->uuid, 'Node UUID was generated.');
+    $this->assertUuid($node->vuuid, 'Node revision UUID was generated.');
 
     // Test node update, without creating new revision.
     $node_test = clone $node;
@@ -291,7 +286,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
     $node_test = node_load($node->nid, FALSE, TRUE);
     $this->assertEqual($node_test->uuid, $node->uuid, 'Node UUID was intact after updating, when creating new revision.');
     $this->assertNotEqual($node_test->vuuid, $node->vuuid, 'A new node revision UUID was generated, when creating new revision.');
-    $this->assertUUID($node_test->vuuid, 'The new node revision UUID was valid.');
+    $this->assertUuid($node_test->vuuid, 'The new node revision UUID was valid.');
 
     // Test entity_uuid_load().
     // Save some variables that we will test against.
@@ -347,7 +342,7 @@ class UUIDNodeTestCase extends UUIDTestCase {
       $this->assertEqual($node_test->title, 'newer title', 'Saving node with UUID mapped to correct node, when creating new revision.');
       $this->assertEqual($node_test->uuid, $node->uuid, 'Node UUID was intact after saving with UUID, when creating new revision.');
       $this->assertNotEqual($node_test->vuuid, $node->vuuid, 'A new node revison UUID was generated after saving with UUID, when creating new revision.');
-      $this->assertUUID($node_test->vuuid, 'New node revision UUID was valid.');
+      $this->assertUuid($node_test->vuuid, 'New node revision UUID was valid.');
       $this->assertEqual($node_test->uid, $node->uid, "Node property 'uid' was intact after saving with UUID, when creating new revision.");
 
       // Test the same thing again, but now triggering a new revision from a
@@ -458,14 +453,14 @@ class UUIDCommentTestCase extends CommentHelperCase {
     // This is sub optimal, but due to how CommentHelperCase::setUp() is
     // constructed we are enforced to do this. So unfortunately this test
     // depends on 'entity' module for now.
-    module_enable(array('uuid', 'entity'), TRUE);
+    module_enable(array('uuid', 'entity'));
     $user = $this->drupalCreateUser();
     $this->drupalLogin($user);
     $node = $this->drupalCreateNode();
     $return = $this->postComment($node, 'Lorem ipsum');
 
     $comment = comment_load($return->id);
-    $this->assertUUID($comment->uuid, 'Comment UUID was generated.');
+    $this->assertUuid($comment->uuid, 'Comment UUID was generated.');
 
     // Test updating comment.
     $comment_test = clone $comment;
@@ -526,13 +521,14 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
    * A lot of code here is taken from TaxonomyTermTestCase::setUp().
    */
   protected function setUp() {
+    $modules = array('taxonomy', 'uuid');
+
     // Some tests depends on the optional Entity API module.
     if (module_exists('entity')) {
-      parent::setUp('taxonomy', 'uuid', 'entity');
+      $modules[] = 'entity';
     }
-    else {
-      parent::setUp('taxonomy', 'uuid');
-    }
+
+    parent::setUp($modules);
   }
 
   /**
@@ -561,7 +557,7 @@ class UUIDTaxonomyTestCase extends TaxonomyWebTestCase {
     $vocabulary = new stdClass();
     $vocabulary->vid = 1;
     $term = $this->createTerm($vocabulary);
-    $this->assertUUID($term->uuid, 'Term UUID was generated.');
+    $this->assertUuid($term->uuid, 'Term UUID was generated.');
 
     // Test updating term.
     $term_test = clone $term;
@@ -652,12 +648,12 @@ class UUIDSyncTestCase extends UUIDTestCase {
 
     // Test if UUID was generated for nodes.
     $node_test = node_load($node->nid, FALSE, TRUE);
-    $this->assertUUID($node_test->uuid, 'Node UUID was generated when clicking the sync button.');
-    $this->assertUUID($node_test->vuuid, 'Node revision UUID was generated when clicking the sync button.');
+    $this->assertUuid($node_test->uuid, 'Node UUID was generated when clicking the sync button.');
+    $this->assertUuid($node_test->vuuid, 'Node revision UUID was generated when clicking the sync button.');
 
     // Test if UUID was generated for users.
     $user_test = user_load($user->uid, TRUE);
-    $this->assertUUID($user_test->uuid, 'User UUID was generated when clicking the sync button.');
+    $this->assertUuid($user_test->uuid, 'User UUID was generated when clicking the sync button.');
   }
 
 }
