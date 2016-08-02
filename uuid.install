@@ -31,12 +31,26 @@ function uuid_schema_field_definition() {
 /**
  * Implements hook_schema_alter().
  */
-function uuid_schema_alter(&$schema = array()) {
-  $field = uuid_schema_field_definition();
-  foreach (uuid_get_core_entity_info() as $info) {
-    $schema[$info['base table']]['fields'][$info['entity keys']['uuid']] = $field;
-    if (!empty($info['revision table']) && !empty($info['entity keys']['revision uuid'])) {
-      $schema[$info['revision table']]['fields'][$info['entity keys']['revision uuid']] = $field;
+function uuid_schema_alter(array &$schema) {
+  $field_info = uuid_schema_field_definition();
+  $key_names = array(
+    'base table' => 'uuid',
+    'revision table' => 'revision uuid',
+  );
+
+  foreach (uuid_get_core_entity_info() as $entity_info) {
+    foreach ($key_names as $table_type => $key_name) {
+      if (isset($entity_info[$table_type], $entity_info['entity keys'][$key_name])) {
+        $field_name = $entity_info['entity keys'][$key_name];
+        $properties = array(
+          'fields' => $field_info,
+          'indexes' => array($field_name),
+        );
+
+        foreach ($properties as $property => $value) {
+          $schema[$entity_info[$table_type]][$property][$field_name] = $value;
+        }
+      }
     }
   }
 }

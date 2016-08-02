@@ -73,6 +73,58 @@ class UUIDAPITestCase extends UUIDTestCase {
     $this->assertUuid($uuid, 'MySQL generator works.');
   }
 
+  /**
+   * Checks that schema for tables of core entities is correctly defined.
+   */
+  public function testSchemas() {
+    module_load_include('install', 'uuid');
+
+    $schemas = drupal_get_schema();
+    $field_info = uuid_schema_field_definition();
+    $key_names = array(
+      'base table' => 'uuid',
+      'revision table' => 'revision uuid',
+    );
+
+    foreach (uuid_get_core_entity_info() as $entity_info) {
+      // Test the fields in "base" and "revision" tables.
+      foreach ($key_names as $table_type => $key_name) {
+        // Table or field is not defined in entity.
+        if (!isset($entity_info[$table_type], $entity_info['entity keys'][$key_name])) {
+          // Not all entities have a revisions table.
+          continue;
+        }
+
+        $field_name = $entity_info['entity keys'][$key_name];
+        $table_name = $entity_info[$table_type];
+
+        if (!isset($schemas[$table_name])) {
+          $this->fail(sprintf('Database schema does not have a "%s" table.', $table_name));
+          continue;
+        }
+
+        $properties = array(
+          'field' => array('fields', $field_info),
+          'index' => array('indexes', array($field_name)),
+        );
+
+        // Check integrity of the field and index definition.
+        foreach ($properties as $type => $data) {
+          list($property, $value) = $data;
+
+          $message = sprintf('Definition of the "%s" %s in the "%s" schema', $field_name, $type, $table_name);
+
+          if (isset($schemas[$table_name][$property][$field_name])) {
+            $this->assertIdentical($schemas[$table_name][$property][$field_name], $value, "$message is correct.");
+          }
+          else {
+            $this->fail("$message does not exist.");
+          }
+        }
+      }
+    }
+  }
+
 }
 
 /**
