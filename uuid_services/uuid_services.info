@@ -6,3 +6,9 @@ package = Services - resources
 dependencies[] = services
 dependencies[] = uuid
 dependencies[] = entity
+
+test_dependencies[] = services
+test_dependencies[] = entity
+test_dependencies[] = file
+test_dependencies[] = field
+test_dependencies[] = file_entity
