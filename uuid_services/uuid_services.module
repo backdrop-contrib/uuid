@@ -194,7 +194,7 @@ function _uuid_services_entity_delete($entity_type, $uuid) {
       return TRUE;
     }
 
-    $return = entity_uuid_delete($entity_type, array($uuid)) !== FALSE;
+    $return = entity_uuid_delete($entity_type, $uuid) !== FALSE;
     return $return;
   }
   catch (Exception $exception) {
