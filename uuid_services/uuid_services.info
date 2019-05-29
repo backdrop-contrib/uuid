@@ -3,6 +3,8 @@ description = Provides integration with the Services module, like exposing a UUI
 core = 7.x
 package = Services - resources
 
+files[] = uuid_services.user_services.test
+
 dependencies[] = services
 dependencies[] = uuid
 dependencies[] = entity
