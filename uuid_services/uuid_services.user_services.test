@@ -5,9 +5,9 @@
  * Test the UUID User Services integration.
  */
 
- /**
-  * Test the UUID User Services integration.
-  */
+/**
+ * Test the UUID User Services integration.
+ */
 class UuidUserServicesTest extends ServicesWebTestCase {
 
   /**
@@ -31,13 +31,13 @@ class UuidUserServicesTest extends ServicesWebTestCase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
-    parent::setUp(
+  public function setUp(array $modules = array()) {
+    parent::setUp(array(
       'ctools',
       'services',
       'rest_server',
-      'uuid_services'
-    );
+      'uuid_services',
+    ));
     $this->endpoint = $this->saveNewEndpoint();
   }
 
@@ -124,7 +124,7 @@ class UuidUserServicesTest extends ServicesWebTestCase {
   }
 
   /**
-   * Tests user Update his own account.
+   * Tests users Update their own account.
    */
   public function testUserUpdate() {
     $admin_user = $this->drupalCreateUser(array(
@@ -141,6 +141,8 @@ class UuidUserServicesTest extends ServicesWebTestCase {
         '2' => 'authenticated user',
         '3' => 'administrator',
       ),
+      'status' => 1,
+      'pass' => $other_user->pass,
     );
     $this->servicesPut($this->endpoint->path . '/user/' . $other_user->uuid, $update);
     $user_after_update = user_load($other_user->uid, TRUE);
@@ -163,6 +165,8 @@ class UuidUserServicesTest extends ServicesWebTestCase {
         '2' => 'authenticated user',
         '3' => 'administrator',
       ),
+      'status' => 1,
+      'pass' => $other_user->pass,
     );
     $response = $this->servicesPut($this->endpoint->path . '/user/' . $other_user->uuid, $update);
     $user_after_update = user_load($other_user->uid, TRUE);
@@ -173,7 +177,7 @@ class UuidUserServicesTest extends ServicesWebTestCase {
   }
 
   /**
-   * Tests user Update his own account fail with no permissions.
+   * Tests users Update their own account fail with no permissions.
    */
   public function testUserOwnUpdatePermFail() {
     $user = $this->drupalCreateUser([
@@ -188,6 +192,8 @@ class UuidUserServicesTest extends ServicesWebTestCase {
         '2' => 'authenticated user',
         '3' => 'administrator',
       ),
+      'status' => 1,
+      'pass' => $user->pass,
     );
     $this->servicesPut($this->endpoint->path . '/user/' . $user->uuid, $update);
     $user_after_update = user_load($user->uid, TRUE);
