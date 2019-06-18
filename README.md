@@ -70,8 +70,8 @@ complete text.
 Current Maintainers
 -------------------
 
-- [Luke McCormick](https://github.com/cellear) (@cellear)
-- [Greg Netsas](https://github.com/klonos) (@klonos)
+- [Luke McCormick (@cellear)](https://github.com/cellear)
+- [Greg Netsas (@klonos)](https://github.com/klonos)
 
 Credits
 -------
@@ -80,9 +80,12 @@ This module is based on the Drupal module
 [Universally Unique IDentifier](https://www.drupal.org/project/uuid).
 
 Drupal Maintainers:
-- [Dave Hall]((https://www.drupal.org/u/skwashd)) / @skwashd
-- [Dick Olsson (dixon_)](https://www.drupal.org/u/dixon_) / @dickolsson
-- [Henrique Recidive (recidive)](https://www.drupal.org/u/recidive) / @recidive
+- [Dave Hall](https://www.drupal.org/u/skwashd) /
+  [@skwashd](https://github.com/skwashd)
+- [Dick Olsson (dixon_)](https://www.drupal.org/u/dixon_) /
+  [@dickolsson](https://github.com/dickolsson)
+- [Henrique Recidive (recidive)](https://www.drupal.org/u/recidive) /
+  [@recidive](https://github.com/recidive)
 
 Supporting organizations:
 - [Drupal Deploy](https://www.drupal.org/drupal-deploy): Drupal 7 port and
