@@ -232,11 +232,6 @@ function entity_make_entity_universal($entity_type, $entities) {
  * @see entity_save()
  */
 function entity_uuid_save($entity_type, $entity) {
-  // This function, and this function only, depends on the entity module.
-  if (!module_exists('entity')) {
-    throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
-  }
-
   $info = entity_get_info($entity_type);
   $uuid_key = $info['entity keys']['uuid'];
   if (empty($entity->{$uuid_key}) || !uuid_is_valid($entity->{$uuid_key})) {
@@ -356,11 +351,6 @@ function entity_make_entity_local($entity_type, $entity) {
  * @see entity_delete()
  */
 function entity_uuid_delete($entity_type, $uuid) {
-  // This function, and this function only, depends on the entity module.
-  if (!module_exists('entity')) {
-    throw new UuidEntityException(t('Calling %function requires the Entity API module (!link).', array('%function' => __FUNCTION__, '!link' => 'http://drupal.org/project/entity')));
-  }
-
   $info = entity_get_info($entity_type);
   if (isset($info['uuid']) && $info['uuid'] == TRUE) {
     // Fetch the local ID by its UUID.
