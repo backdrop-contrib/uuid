@@ -250,14 +250,17 @@ function entity_uuid_save($entity_type, $entity) {
   // But since using entity_uuid_save() usually means you're trying to manage
   // entities remotely we do respect this variable here to make it work as the
   // node form, but only if we explicitly haven't set $node->revision already.
-  if ($entity_type == 'node' && !isset($entity->revision) && in_array('revision', variable_get('node_options_' . $entity->type, array()))) {
-    $entity->revision = 1;
+  if ($entity_type == 'node' && !isset($entity->revision)) {
+    $node_type = node_type_load($entity->type);
+    if ($node_type->settings['revision_enabled']) {
+      $entity->revision = $node_type->settings['revision_default'];
+    }
   }
 
   entity_make_entity_local($entity_type, $entity);
 
   // Save the entity.
-  $result = entity_save($entity_type, $entity);
+  $result = $entity->save();
 
   $hook = 'entity_uuid_save';
   foreach (module_implements($hook) as $module) {
@@ -378,7 +381,7 @@ function entity_uuid_delete($entity_type, $uuid) {
       return FALSE;
     }
     // Delete the entity.
-    return entity_delete($entity_type, $id);
+    return $entity->delete();
   }
   else {
     throw new UuidEntityException(t("Trying to delete a @type entity, which doesn\'t support UUIDs.", array('@type' => $info['label'])));
@@ -439,7 +442,7 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
     ->condition($uuid_key, array_values($uuids), 'IN')
     ->execute()
     ->fetchAllKeyed();
-  $cache = &drupal_static('entity_uuid_id_cache', array());
+  $cache = &backdrop_static('entity_uuid_id_cache', array());
   $cache[$entity_type][(int) $revision] += $result;
   return $result + $cached_ids;
 }
@@ -448,7 +451,7 @@ function entity_get_id_by_uuid($entity_type, $uuids, $revision = FALSE) {
  * Helper caching function.
  */
 function entity_uuid_id_cache($entity_type, $ids, $revision) {
-  $cache = &drupal_static(__FUNCTION__, array());
+  $cache = &backdrop_static(__FUNCTION__, array());
   if (empty($cache[$entity_type][(int) $revision])) {
     $cache[$entity_type][(int) $revision] = array();
   }
@@ -511,7 +514,7 @@ function entity_get_uuid_by_id($entity_type, $ids, $revision = FALSE) {
     ->condition($id_key, array_values($ids), 'IN')
     ->execute()
     ->fetchAllKeyed();
-  $cache = &drupal_static('entity_uuid_id_cache', array());
+  $cache = &backdrop_static('entity_uuid_id_cache', array());
   $cache[$entity_type][(int) $revision] += array_flip($result);
   return $result + $cached_ids;
 }

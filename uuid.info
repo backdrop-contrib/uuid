@@ -7,3 +7,4 @@ configure = admin/config/system/uuid
 files[] = uuid.test
 dependencies[] = node
 dependencies[] = user
+dependencies[] = entity_plus

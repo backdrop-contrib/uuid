@@ -15,12 +15,12 @@ function uuid_token_info() {
       $token_type = !empty($info['token type']) ? $info['token type'] : $entity_type;
       $tokens['tokens'][$token_type][$info['entity keys']['uuid']] = array(
         'name' => t('@entity_type UUID', array('@entity_type' => $info['label'])),
-        'description' => t('The universally unique ID of the @entity', array('@entity' => drupal_strtolower($info['label']))),
+        'description' => t('The universally unique ID of the @entity', array('@entity' => backdrop_strtolower($info['label']))),
       );
       if (!empty($info['entity keys']['revision uuid'])) {
         $tokens['tokens'][$token_type][$info['entity keys']['revision uuid']] = array(
           'name' => t('@entity_type revision UUID', array('@entity_type' => $info['label'])),
-          'description' => t('The universally unique revision ID of the @entity', array('@entity' => drupal_strtolower($info['label']))),
+          'description' => t('The universally unique revision ID of the @entity', array('@entity' => backdrop_strtolower($info['label']))),
         );
       }
     }

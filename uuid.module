@@ -42,7 +42,7 @@ function uuid_menu() {
   $items['admin/config/system/uuid'] = array(
     'title' => 'Universally unique identifiers',
     'description' => 'Configure universally unique identifiers.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('uuid_admin_form'),
     'access arguments' => array('administer uuid'),
     'file' => 'uuid.admin.inc',
@@ -129,7 +129,7 @@ function uuid_hook_info() {
 function uuid_views_api() {
   return array(
     'api' => 2,
-    'path' => drupal_get_path('module', 'uuid'),
+    'path' => backdrop_get_path('module', 'uuid'),
   );
 }
 
@@ -201,7 +201,7 @@ function uuid_features_api() {
       'default_hook' => 'uuid_default_entities',
       'default_file' => FEATURES_DEFAULTS_INCLUDED,
       'feature_source' => TRUE,
-      'file' => drupal_get_path('module', 'uuid') . '/uuid.features.inc',
+      'file' => backdrop_get_path('module', 'uuid') . '/uuid.features.inc',
     ),
   );
 }
@@ -224,9 +224,9 @@ function uuid_redirector() {
 
   $uri = entity_uri($entity_data['entity_type'], current($entities));
 
-  if (!drupal_valid_path($uri['path'])) {
+  if (!backdrop_valid_path($uri['path'])) {
     return MENU_ACCESS_DENIED;
   }
 
-  drupal_goto($uri['path'], $uri['options'], 301);
+  backdrop_goto($uri['path'], $uri['options'], 301);
 }

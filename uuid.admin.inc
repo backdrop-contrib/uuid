@@ -30,7 +30,7 @@ function uuid_admin_form() {
  */
 function uuid_admin_sync_submit() {
   uuid_sync_all();
-  drupal_set_message(t('Generated missing UUIDs.'));
+  backdrop_set_message(t('Generated missing UUIDs.'));
 }
 
 /**
