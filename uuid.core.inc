@@ -217,7 +217,7 @@ function file_entity_uuid_presave(&$entity, $entity_type) {
         $replace = FILE_EXISTS_REPLACE;
       }
 
-      $directory = drupal_dirname($uri);
+      $directory = backdrop_dirname($uri);
       if (!empty($directory) && file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
         $entity->uri = file_unmanaged_save_data(base64_decode($entity->file_contents), $uri, $replace);
       }
