@@ -21,7 +21,7 @@ define('UUID_PATTERN', '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abA
  *   An UUID, made up of 32 hex digits and 4 hyphens.
  */
 function uuid_generate() {
-  $callback = drupal_static(__FUNCTION__);
+  $callback = backdrop_static(__FUNCTION__);
 
   if (empty($callback)) {
     if (function_exists('uuid_create') && !function_exists('uuid_make')) {
@@ -157,7 +157,7 @@ function uuid_id_uri_array_to_data($uri) {
     'id' => $uri[1],
   );
 
-  drupal_alter('uuid_id_uri_data', $data);
+  backdrop_alter('uuid_id_uri_data', $data);
 
   return $data;
 }
@@ -197,7 +197,7 @@ function uuid_uri_array_to_data($uri, $strip_uuid = TRUE) {
     'uuid' => isset($uri[1]) ? $uri[1] : NULL,
   );
 
-  drupal_alter('uuid_uri_data', $data);
+  backdrop_alter('uuid_uri_data', $data);
 
   return $data;
 }
@@ -209,7 +209,7 @@ function uuid_uri_array_to_data($uri, $strip_uuid = TRUE) {
  */
 function _uuid_generate_com() {
   // Remove {} wrapper and make lower case to keep result consistent.
-  return drupal_strtolower(trim(com_create_guid(), '{}'));
+  return backdrop_strtolower(trim(com_create_guid(), '{}'));
 }
 
 /**
